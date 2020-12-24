@@ -1,8 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+void showBoard(){
+    printf("___________________\n");
+    printf("|     |     |     |\n");
+    printf("|  0  |  0  |  0  |\n");
+
+    printf("|_____|_____|_____|\n");
+    printf("|     |     |     |\n");
+
+    printf("|  0  |  0  |  0  |\n");
+
+    printf("|_____|_____|_____|\n");
+    printf("|     |     |     |\n");
+
+    printf("|  0  |  0  |  0  |\n");
+
+    printf("|_____|_____|_____|\n\n");
+}
+
 int main()
 {
-    printf("Test Commit\n");
+    showBoard();
     return 0;
 }
+
