@@ -3,6 +3,6 @@
 
 int main()
 {
-    printf("Hello world!!\n");
+    printf("Test Commit\n");
     return 0;
 }
