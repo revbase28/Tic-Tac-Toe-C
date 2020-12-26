@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 void showBoard(){
     printf("___________________\n");
     printf("|     |     |     |\n");
