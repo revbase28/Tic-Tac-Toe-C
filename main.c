@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <string.h>
+#include <stdbool.h>
 
 //Constant
 const int MODE_3X3 = 1;
@@ -14,6 +15,11 @@ const int X = -1;
 const int O = 0;
 
 int counter = 0;
+
+typedef struct{
+    int x;
+    int y;
+} Position;
 
 void showProgramTitle(){
     printf("===================================\n");
@@ -55,23 +61,52 @@ void initBoardValue(int *arr, int num){
     int boardIndex = 1;
     for(int i = 0; i < num; i++){
         for(int j = 0; j < num ; j++){
-            *((arr + i*num) + j) = boardIndex;
+            *((arr + i*num) + j) = -1;
             boardIndex++;
         }
     }
 }
 
-void showBoardValue(int value, char *buffer){
+void makeOutputWhite(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 15);
+}
 
-    static char charRepOfValue[3] = {};
-    itoa(value, charRepOfValue, 10);
-    buffer = value == 0 ? "O" : value == -1 ? "X" : charRepOfValue;
-    //printf("%s", buffer);
+void makeOutputRed(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 12);
+}
+
+
+void makeOutputBlue(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 9);
+}
+
+void determineOutputColor(char *charRep){
+
+    if(strcmp(charRep,"O") == 0 || strcmp(charRep," O") == 0){
+        makeOutputRed();
+    } else if(strcmp(charRep,"X") == 0 || strcmp(charRep," X") == 0){
+        makeOutputBlue();
+    }
+
+    if(strlen(charRep) > 1)
+        printf(" %s  ", charRep);
+    else
+        printf("  %s  ", charRep);
+
+    makeOutputWhite();
 }
 
 void showBoard(int mode, int *boardValue){
     char charRepValue [mode == 1 ? 3*3 : mode == 2 ? 5*5 : 7*7][3];
     int counter = 0;
+    int start;
+    int index;
 
     switch(mode){
         // Mode 3X3
@@ -94,13 +129,46 @@ void showBoard(int mode, int *boardValue){
 
             printf(" _____ _____ _____\n");
             printf("|     |     |     |\n");
-            printf("|  %s  |  %s  |  %s  |\n", charRepValue[0], charRepValue[1], charRepValue[2]);
+
+            index = 0;
+            for(start = 0 ; start < 3; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 2){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
+
             printf("|_____|_____|_____|\n");
             printf("|     |     |     |\n");
-            printf("|  %s  |  %s  |  %s  |\n", charRepValue[3], charRepValue[4], charRepValue[5]);
+
+            index = 3;
+            for(start = 0 ; start < 3; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 2){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
+
             printf("|_____|_____|_____|\n");
             printf("|     |     |     |\n");
-            printf("|  %s  |  %s  |  %s  |\n", charRepValue[6], charRepValue[7], charRepValue[8]);
+
+            index = 6;
+            for(start = 0 ; start < 3; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 2){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
+
             printf("|_____|_____|_____|\n");
         break;
 
@@ -131,27 +199,72 @@ void showBoard(int mode, int *boardValue){
             printf(" _____ _____ _____ _____ _____\n");
             printf("|     |     |     |     |     |\n");
 
-            printf("|  %s  |  %s  |  %s  |  %s  |  %s  |\n" , charRepValue[0], charRepValue[1], charRepValue[2], charRepValue[3], charRepValue[4]);
+            index = 0;
+            for(start = 0 ; start < 5; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 4){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |\n");
 
-            printf("|  %s  |  %s  |  %s  |  %s  | %s  |\n" , charRepValue[5], charRepValue[6], charRepValue[7], charRepValue[8], charRepValue[9]);
+            index = 5;
+            for(start = 0 ; start < 5; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 4){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[10], charRepValue[11], charRepValue[12], charRepValue[13], charRepValue[14]);
+            index = 10;
+            for(start = 0 ; start < 5; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 4){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[15], charRepValue[16], charRepValue[17], charRepValue[18], charRepValue[19]);
+            index = 15;
+            for(start = 0 ; start < 5; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 4){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[20], charRepValue[21], charRepValue[22], charRepValue[23], charRepValue[24]);
+            index = 20;
+            for(start = 0 ; start < 5; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 4){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|\n");
         break;
@@ -184,59 +297,182 @@ void showBoard(int mode, int *boardValue){
             printf(" _____ _____ _____ _____ _____ _____ _____\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("|  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |  %s  |\n" , charRepValue[0], charRepValue[1], charRepValue[2], charRepValue[3], charRepValue[4], charRepValue[5], charRepValue[6]);
+            index = 0;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("|  %s  |  %s  | %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[7], charRepValue[8], charRepValue[9], charRepValue[10], charRepValue[11], charRepValue[12], charRepValue[13]);
+            index = 7;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[14], charRepValue[15], charRepValue[16], charRepValue[17], charRepValue[18], charRepValue[19], charRepValue[20]);
+            index = 14;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[21], charRepValue[22], charRepValue[23], charRepValue[24], charRepValue[25], charRepValue[26], charRepValue[27]);
+            index = 21;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[28], charRepValue[29], charRepValue[30], charRepValue[31], charRepValue[32], charRepValue[33], charRepValue[34]);
+            index = 28;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[35], charRepValue[36], charRepValue[37], charRepValue[38], charRepValue[39], charRepValue[40], charRepValue[41]);
+            index = 35;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
             printf("|     |     |     |     |     |     |     |\n");
 
-            printf("| %s  | %s  | %s  | %s  | %s  | %s  | %s  |\n" , charRepValue[42], charRepValue[43], charRepValue[44], charRepValue[45], charRepValue[46], charRepValue[47], charRepValue[48]);
+            index = 42;
+            for(start = 0 ; start < 7; start++){
+                printf("|");
+                determineOutputColor(charRepValue[index]);
+                if(start == 6){
+                    printf("|");
+                }
+                index++;
+            }
+            printf("\n");
 
             printf("|_____|_____|_____|_____|_____|_____|_____|\n");
         break;
     }
 }
 
+void putInputToBoard(int inputPos, int *boardValue, int mode){
+    Position pos;
+    switch(mode){
+        case 1:
+            pos.x = (inputPos - 1) / 3;
+            pos.y = (inputPos-1) % 3;
+
+            *((boardValue + pos.x*3) + pos.y) = 0;
+        break;
+
+        case 2:
+            pos.x = (inputPos - 1) / 5;
+            pos.y = (inputPos-1) % 5;
+
+            *((boardValue + pos.x*5) + pos.y) = 0;
+        break;
+
+        case 3:
+            pos.x = (inputPos - 1) / 7;
+            pos.y = (inputPos-1) % 7;
+
+            *((boardValue + pos.x*7) + pos.y) = 0;
+        break;
+    }
+}
+
 void play3X3(int difficulty){
     int boardValue3X3 [3][3];
+    int inputPos;
+
     initBoardValue(*boardValue3X3, 3);
-    showBoard(MODE_3X3, *boardValue3X3);
+
+    do{
+        showBoard(MODE_3X3, *boardValue3X3);
+        printf("\n\n");
+        printf("Masukan Posisi : ");
+        scanf("%d", &inputPos);
+
+        putInputToBoard(inputPos, *boardValue3X3, MODE_3X3);
+        system("cls");
+    } while(true);
+
 }
 
 void play5X5(int difficulty){
     int boardValue5X5 [5][5];
+    int inputPos;
+
     initBoardValue(*boardValue5X5, 5);
-    showBoard(MODE_5X5, *boardValue5X5);
+    do{
+        showBoard(MODE_5X5, *boardValue5X5);
+        printf("\n\n");
+        printf("Masukan Posisi : ");
+        scanf("%d", &inputPos);
+
+        putInputToBoard(inputPos, *boardValue5X5, MODE_5X5);
+        system("cls");
+    } while(true);
+
 }
 
 void play7X7(int difficulty){
     int boardValue7X7 [7][7];
+    int inputPos;
+
     initBoardValue(*boardValue7X7, 7);
-    showBoard(MODE_7X7, *boardValue7X7);
+
+    do{
+        showBoard(MODE_7X7, *boardValue7X7);
+        printf("\n\n");
+        printf("Masukan Posisi : ");
+        scanf("%d", &inputPos);
+
+        putInputToBoard(inputPos, *boardValue7X7, MODE_7X7);
+        system("cls");
+    } while(true);
 }
 
 int main()
