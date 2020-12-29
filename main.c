@@ -14,8 +14,6 @@ const int HARD = 3;
 const int X = -1;
 const int O = 0;
 
-int counter = 0;
-
 typedef struct{
     int x;
     int y;
@@ -414,6 +412,7 @@ void putInputToBoard(int inputPos, int *boardValue, int mode){
 
         break;
 
+        //Mode 5X5
         case 2:
             pos.x = (inputPos - 1) / 5;
             pos.y = (inputPos-1) % 5;
@@ -427,6 +426,7 @@ void putInputToBoard(int inputPos, int *boardValue, int mode){
 
         break;
 
+        //Mode 7X7
         case 3:
             pos.x = (inputPos - 1) / 7;
             pos.y = (inputPos-1) % 7;
