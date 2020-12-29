@@ -61,7 +61,7 @@ void initBoardValue(int *arr, int num){
     int boardIndex = 1;
     for(int i = 0; i < num; i++){
         for(int j = 0; j < num ; j++){
-            *((arr + i*num) + j) = -1;
+            *((arr + i*num) + j) = boardIndex;
             boardIndex++;
         }
     }
@@ -400,25 +400,44 @@ void showBoard(int mode, int *boardValue){
 void putInputToBoard(int inputPos, int *boardValue, int mode){
     Position pos;
     switch(mode){
+        //Mode 3X3
         case 1:
             pos.x = (inputPos - 1) / 3;
             pos.y = (inputPos-1) % 3;
 
-            *((boardValue + pos.x*3) + pos.y) = 0;
+            if( *((boardValue + pos.x*3) + pos.y) != 0 && *((boardValue + pos.x*3) + pos.y) != -1)
+                *((boardValue + pos.x*3) + pos.y) = 0;
+            else{
+                printf("\nPosisi sudah terisi\n");
+                Sleep(1000);
+            }
+
         break;
 
         case 2:
             pos.x = (inputPos - 1) / 5;
             pos.y = (inputPos-1) % 5;
 
-            *((boardValue + pos.x*5) + pos.y) = 0;
+            if( *((boardValue + pos.x*5) + pos.y) != 0 && *((boardValue + pos.x*5) + pos.y) != -1)
+                *((boardValue + pos.x*5) + pos.y) = 0;
+            else{
+                printf("\nPosisi sudah terisi\n");
+                Sleep(1000);
+            }
+
         break;
 
         case 3:
             pos.x = (inputPos - 1) / 7;
             pos.y = (inputPos-1) % 7;
 
-            *((boardValue + pos.x*7) + pos.y) = 0;
+            if( *((boardValue + pos.x*7) + pos.y) != 0 && *((boardValue + pos.x*7) + pos.y) != -1)
+                *((boardValue + pos.x*7) + pos.y) = 0;
+            else{
+                printf("\nPosisi sudah terisi\n");
+                Sleep(1000);
+            }
+
         break;
     }
 }
@@ -435,7 +454,12 @@ void play3X3(int difficulty){
         printf("Masukan Posisi : ");
         scanf("%d", &inputPos);
 
-        putInputToBoard(inputPos, *boardValue3X3, MODE_3X3);
+        if(inputPos > 0 && inputPos <= 9){
+            putInputToBoard(inputPos, *boardValue3X3, MODE_3X3);
+        } else {
+            printf("\nPosisi tidak valid\n");
+            Sleep(1000);
+        }
         system("cls");
     } while(true);
 
@@ -452,7 +476,12 @@ void play5X5(int difficulty){
         printf("Masukan Posisi : ");
         scanf("%d", &inputPos);
 
-        putInputToBoard(inputPos, *boardValue5X5, MODE_5X5);
+        if(inputPos > 0 && inputPos <= 25){
+            putInputToBoard(inputPos, *boardValue5X5, MODE_5X5);
+        } else {
+            printf("\nPosisi tidak valid\n");
+            Sleep(1000);
+        }
         system("cls");
     } while(true);
 
@@ -470,7 +499,12 @@ void play7X7(int difficulty){
         printf("Masukan Posisi : ");
         scanf("%d", &inputPos);
 
-        putInputToBoard(inputPos, *boardValue7X7, MODE_7X7);
+        if(inputPos > 0 && inputPos <= 50){
+            putInputToBoard(inputPos, *boardValue7X7, MODE_7X7);
+        } else {
+            printf("\nPosisi tidak valid\n");
+            Sleep(1000);
+        }
         system("cls");
     } while(true);
 }
