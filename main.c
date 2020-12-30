@@ -407,17 +407,16 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
             pos.y = (inputPos-1) % 3;
 
             if( *((boardValue + pos.x*3) + pos.y) != O && *((boardValue + pos.x*3) + pos.y) != X){
-                if (*player%2)
+                if (*player % 2)
                     *((boardValue + pos.x*3) + pos.y) = O;
                 else
-                    *((boardValue + pos.x*3) + pos.y) = X;  
+                    *((boardValue + pos.x*3) + pos.y) = X;
             }
-            
+
             else{
                 printf("\nPosisi sudah terisi\n");
                 Sleep(1000);
-
-                *player--;
+                (*player)--;
             }
 
         break;
@@ -461,24 +460,24 @@ int checkwin(int BoardValue3x3[][3]){
 void play3X3(int difficulty){
     int boardValue3X3 [3][3];
     int inputPos;
-    int i=-1, player = X;
+    int i = -1, player = X;
     initBoardValue(*boardValue3X3, 3);
 
     do{
-        player = (player%2) ? X : O ;
+        player = (player % 2) ? X : O ;
 
         showBoard(MODE_3X3, *boardValue3X3);
         printf("\n\n");
         printf("Masukan Posisi : ");
         scanf("%d", &inputPos);
 
+        printf("a %d", player);
         if(inputPos > 0 && inputPos <= 9){
             putInputToBoard(inputPos, *boardValue3X3, MODE_3X3, &player);
         } else {
             printf("\nPosisi tidak valid\n");
-            Sleep(1000);
-            
             player--;
+            Sleep(1000);
         }
         system("cls");
         player++;
