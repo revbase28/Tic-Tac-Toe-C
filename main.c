@@ -14,6 +14,7 @@ const int HARD = 3;
 const int X = -1;
 const int O = 0;
 
+
 typedef struct{
     int x;
     int y;
