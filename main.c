@@ -14,7 +14,8 @@ const int HARD = 3;
 const int X = -1;
 const int O = 0;
 const int WIN = 1;
-const int DRAW = 0;
+const int DRAW = -1;
+const int CONTINUE = 0;
 
 
 typedef struct{
@@ -403,7 +404,7 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
     switch(mode){
         //Mode 3X3
         case 1:
-            pos.x = (inputPos - 1) / 3;
+            pos.x = (inputPos-1) / 3;
             pos.y = (inputPos-1) % 3;
 
             if( *((boardValue + pos.x*3) + pos.y) != O && *((boardValue + pos.x*3) + pos.y) != X){
@@ -451,10 +452,30 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
     }
 }
 
-int checkwin(int BoardValue3x3[][3]){
+int checkwin(int Board[3][3]){
+    if ((Board[0][0]==board[0][1]) && (Board[0][1]==board[0][2]))
+        return WIN ;
+    if ((Board[1][0]==board[1][1]) && (Board[1][1]==board[1][2]))
+        return WIN ;
+    if ((Board[2][0]==board[2][1]) && (Board[2][1]==board[2][2]))
+        return WIN ;
+    if ((Board[0][0]==board[1][0]) && (Board[1][0]==board[2][0]))
+        return WIN ;
+    if ((Board[0][1]==board[1][1]) && (Board[1][1]==board[2][1]))
+        return WIN ;
+    if ((Board[0][2]==board[1][2]) && (Board[1][2]==board[2][2]))
+        return WIN ;
+    if ((Board[0][0]==board[1][1]) && (Board[1][1]==board[2][2]))
+        return WIN ;
+    if ((Board[0][2]==board[1][1]) && (Board[1][1]==board[2][0]))
+        return WIN ;
 
+    if (Board[0][0]!= '1' && Board[0][1]!= '2' && Board[0][2]!= '3'&&  //check if all value in the board isn't the initial value 
+        Board[1][0]!= '4' && Board[1][1]!= '5' && Board[1][2]!= '6'&&  //and nobody win then draw
+        Board[2][0]!= '7' && Board[2][1]!= '8' && Board[2][2]!= '9')
+            return DRAW ;
 
-    return 0;
+    return CONTINUE;
 }
 
 void play3X3(int difficulty){
