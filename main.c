@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <string.h>
 #include <stdbool.h>
+#include <conio.h>
 
 //Constant
 const int MODE_3X3 = 1;
@@ -13,6 +14,10 @@ const int MEDIUM = 2;
 const int HARD = 3;
 const int X = -1;
 const int O = 0;
+const int WIN = 1;
+const int DRAW = -1;
+const int CONTINUE = 0;
+
 
 typedef struct{
     int x;
@@ -111,11 +116,11 @@ void showBoard(int mode, int *boardValue){
         case 1:
             for(int i = 0; i < 3; i++){
                 for(int j = 0; j < 3; j++){
-                    if(*((boardValue + i*3) + j) == 0){
+                    if(*((boardValue + i*3) + j) == O){
                         strcpy(charRepValue[counter], "O");
                     }
 
-                    else if(*((boardValue + i*3) + j) == -1){
+                    else if(*((boardValue + i*3) + j) == X){
                         strcpy(charRepValue[counter], "X");
                     }
                     else {
@@ -395,19 +400,25 @@ void showBoard(int mode, int *boardValue){
     }
 }
 
-void putInputToBoard(int inputPos, int *boardValue, int mode){
+void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
     Position pos;
     switch(mode){
         //Mode 3X3
         case 1:
-            pos.x = (inputPos - 1) / 3;
+            pos.x = (inputPos-1) / 3;
             pos.y = (inputPos-1) % 3;
 
-            if( *((boardValue + pos.x*3) + pos.y) != 0 && *((boardValue + pos.x*3) + pos.y) != -1)
-                *((boardValue + pos.x*3) + pos.y) = 0;
+            if( *((boardValue + pos.x*3) + pos.y) != O && *((boardValue + pos.x*3) + pos.y) != X){
+                if (*player % 2)
+                    *((boardValue + pos.x*3) + pos.y) = O;
+                else
+                    *((boardValue + pos.x*3) + pos.y) = X;
+            }
+
             else{
                 printf("\nPosisi sudah terisi\n");
                 Sleep(1000);
+                (*player)--;
             }
 
         break;
@@ -442,27 +453,86 @@ void putInputToBoard(int inputPos, int *boardValue, int mode){
     }
 }
 
+int CheckWin3x3(int Board[3][3]){
+    if ((Board[0][0]==Board[0][1]) && (Board[0][1]==Board[0][2]))
+        return WIN ;
+    else if ((Board[1][0]==Board[1][1]) && (Board[1][1]==Board[1][2]))
+        return WIN ;
+    else if ((Board[2][0]==Board[2][1]) && (Board[2][1]==Board[2][2]))
+        return WIN ;
+    else if ((Board[0][0]==Board[1][0]) && (Board[1][0]==Board[2][0]))
+        return WIN ;
+    else if ((Board[0][1]==Board[1][1]) && (Board[1][1]==Board[2][1]))
+        return WIN ;
+    else if ((Board[0][2]==Board[1][2]) && (Board[1][2]==Board[2][2]))
+        return WIN ;
+    else if ((Board[0][0]==Board[1][1]) && (Board[1][1]==Board[2][2]))
+        return WIN ;
+    else if ((Board[0][2]==Board[1][1]) && (Board[1][1]==Board[2][0]))
+        return WIN ;
+
+    else if (Board[0][0] != 1 && Board[0][1] != 2 && Board[0][2] != 3 &&  //check if all value in the board isn't the initial value 
+            Board[1][0] != 5 && Board[1][1] != 5 && Board[1][2] != 6 &&  //and nobody win then draw
+            Board[2][0] != 7 && Board[2][1] != 8 && Board[2][2] != 9)
+            return DRAW ;
+
+    else
+        return CONTINUE;
+}
+
+void theWinner(int player, char winner[10]){
+    if (player == O)
+        strcpy(winner, "Player") ;
+    else
+        strcpy(winner, "Bot") ;
+}
+
+void showWinner(int player, int Check, char winner[10]){
+    theWinner(player, winner) ;
+    if (Check == WIN){
+        printf("\n\n==> \a%s Win", winner) ;
+    }
+    else {
+        printf("\n\n==> \aGame Draw") ;
+    }
+}
+
 void play3X3(int difficulty){
     int boardValue3X3 [3][3];
     int inputPos;
+    int Check = CONTINUE ;
+    int player = X;
+    char winner[10] ;
 
     initBoardValue(*boardValue3X3, 3);
 
     do{
+        player = (player % 2) ? X : O;
+
         showBoard(MODE_3X3, *boardValue3X3);
         printf("\n\n");
         printf("Masukan Posisi : ");
         scanf("%d", &inputPos);
 
         if(inputPos > 0 && inputPos <= 9){
-            putInputToBoard(inputPos, *boardValue3X3, MODE_3X3);
+            putInputToBoard(inputPos, *boardValue3X3, MODE_3X3, &player);
         } else {
             printf("\nPosisi tidak valid\n");
+            player--;
             Sleep(1000);
         }
         system("cls");
-    } while(true);
 
+        Check = CheckWin3x3(boardValue3X3) ;
+
+        player++;
+
+    } while(Check == CONTINUE);
+
+    showBoard(MODE_3X3, *boardValue3X3);
+    showWinner(player, Check, winner) ;
+
+    getch() ;
 }
 
 void play5X5(int difficulty){
@@ -477,7 +547,7 @@ void play5X5(int difficulty){
         scanf("%d", &inputPos);
 
         if(inputPos > 0 && inputPos <= 25){
-            putInputToBoard(inputPos, *boardValue5X5, MODE_5X5);
+            // putInputToBoard(inputPos, *boardValue5X5, MODE_5X5);
         } else {
             printf("\nPosisi tidak valid\n");
             Sleep(1000);
@@ -500,7 +570,7 @@ void play7X7(int difficulty){
         scanf("%d", &inputPos);
 
         if(inputPos > 0 && inputPos <= 50){
-            putInputToBoard(inputPos, *boardValue7X7, MODE_7X7);
+            // putInputToBoard(inputPos, *boardValue7X7, MODE_7X7);
         } else {
             printf("\nPosisi tidak valid\n");
             Sleep(1000);
