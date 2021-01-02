@@ -18,7 +18,6 @@ const int WIN = 1;
 const int DRAW = -1;
 const int CONTINUE = 0;
 
-
 typedef struct{
     int x;
     int y;
@@ -443,10 +442,14 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
             pos.y = (inputPos-1) % 7;
 
             if( *((boardValue + pos.x*7) + pos.y) != 0 && *((boardValue + pos.x*7) + pos.y) != -1)
-                *((boardValue + pos.x*7) + pos.y) = 0;
+                if (*player % 2)
+                    *((boardValue + pos.x*7) + pos.y) = O;
+                else
+                    *((boardValue + pos.x*7) + pos.y) = X;
             else{
                 printf("\nPosisi sudah terisi\n");
                 Sleep(1000);
+                (*player)--;
             }
 
         break;
@@ -471,13 +474,148 @@ int CheckWin3x3(int Board[3][3]){
     else if ((Board[0][2]==Board[1][1]) && (Board[1][1]==Board[2][0]))
         return WIN ;
 
-    else if (Board[0][0] != 1 && Board[0][1] != 2 && Board[0][2] != 3 &&  //check if all value in the board isn't the initial value 
+    else if (Board[0][0] != 1 && Board[0][1] != 2 && Board[0][2] != 3 &&  //check if all value in the board isn't the initial value
             Board[1][0] != 5 && Board[1][1] != 5 && Board[1][2] != 6 &&  //and nobody win then draw
             Board[2][0] != 7 && Board[2][1] != 8 && Board[2][2] != 9)
             return DRAW ;
 
     else
         return CONTINUE;
+}
+
+int checkWin7x7(int board[7][7]){
+    int sameCount = 1;
+    int countBlank = 0;
+    int checkedChar;
+    int iteration;
+    int i, j, k, l;
+
+    //Check Horizontally
+    for(i = 0; i < 7 ; i++){
+        sameCount = 1;
+        for(j = 0 ; j < 6 ; j++){
+            checkedChar = board[i][j] == X ? X : board[i][j] == O ? O : board[i][j];
+
+            if((checkedChar != X && checkedChar != O) || (board[6][6] != X && board[6][6] != O))
+                countBlank++;
+
+            if(checkedChar == board[i][j + 1])
+                sameCount++;
+
+            else
+                sameCount = 1;
+
+            if(sameCount == 4)
+                return WIN;
+        }
+    }
+    sameCount = 1;
+
+    //Check Vertically
+    for(i = 0; i < 7 ; i++){
+        sameCount = 1;
+        for(j = 0 ; j < 6 ; j++){
+            checkedChar = board[j][i] == X ? X : board[j][i] == O ? O : board[j][i];
+            if(checkedChar == board[j + 1][i])
+                sameCount++;
+            else
+                sameCount = 1;
+
+            if(sameCount == 4)
+                return WIN;
+        }
+    }
+    sameCount = 1;
+
+    //Check Diagonally from Left
+    iteration = 0;
+    while(iteration < 4){
+        i = iteration;
+        j = 0;
+        k = 0;
+        l = iteration;
+
+        sameCount = 1;
+        while(i < 6 && j < 6){
+            checkedChar = board[i][j] == X ? X : board[i][j] == O ? O : board[i][j];
+            if(checkedChar == board[i + 1][j + 1])
+                sameCount++;
+            else
+                sameCount = 1;
+
+            if(sameCount == 4){
+                printf(" sumCount %d\n", sameCount);
+                return WIN;
+            }
+
+            i++;
+            j++;
+        }
+
+        sameCount = 1;
+        while(k < 6 && l < 6){
+            checkedChar = board[k][l] == X ? X : board[k][l] == O ? O : board[k][l];
+            if(checkedChar == board[k + 1][l + 1])
+                sameCount++;
+
+            else
+                sameCount = 1;
+
+            if(sameCount == 4)
+                return WIN;
+
+            k++;
+            l++;
+        }
+        iteration++;
+    }
+    sameCount = 1;
+
+    //Check Diagonally from Right
+    iteration--;
+    while(iteration < 7){
+        i = 0;
+        j = iteration;
+        k = iteration - 2;
+        l = 6;
+
+
+        sameCount = 1;
+        while(i < 6 && j >= 0){
+            checkedChar = board[i][j] == X ? X : board[i][j] == O ? O : board[i][j];
+            if(checkedChar == board[i + 1][j - 1])
+                sameCount++;
+            else
+                sameCount = 1;
+
+            if(sameCount == 4)
+                return WIN;
+
+            i++;
+            j--;
+        }
+
+        sameCount = 1;
+        while(k < 6){
+            checkedChar = board[k][l] == X ? X : board[k][l] == O ? O : board[k][l];
+            if(checkedChar == board[k + 1][l - 1])
+                sameCount++;
+            else
+                sameCount = 1;
+
+            if(sameCount == 4)
+                return WIN;
+
+            k++;
+            l--;
+        }
+        iteration++;
+    }
+
+    if (countBlank == 0)
+        return DRAW;
+
+    return CONTINUE;
 }
 
 void theWinner(int player, char winner[10]){
@@ -490,10 +628,10 @@ void theWinner(int player, char winner[10]){
 void showWinner(int player, int Check, char winner[10]){
     theWinner(player, winner) ;
     if (Check == WIN){
-        printf("\n\n==> \a%s Win", winner) ;
+        printf("\n\n==> \a%s Win\n", winner) ;
     }
     else {
-        printf("\n\n==> \aGame Draw") ;
+        printf("\n\n==> \aGame Draw\n") ;
     }
 }
 
@@ -502,8 +640,8 @@ void play3X3(int difficulty){
     int inputPos;
     int Check = CONTINUE ;
     int player = O;
-    char winner[10] ;
-
+    char winner[10] = {};
+  
     initBoardValue(*boardValue3X3, 3);
 
     do{
@@ -531,7 +669,7 @@ void play3X3(int difficulty){
     } while(Check == CONTINUE);
 
     showBoard(MODE_3X3, *boardValue3X3);
-    showWinner(player, Check, winner) ;
+    showWinner(player, Check, winner);
 
     getch() ;
 }
@@ -561,23 +699,43 @@ void play5X5(int difficulty){
 void play7X7(int difficulty){
     int boardValue7X7 [7][7];
     int inputPos;
+    int check = CONTINUE;
+    int player = X;
+    char winner[10] = {};
 
-    initBoardValue(*boardValue7X7, 7);
+    do {
+        initBoardValue(*boardValue7X7, 7);
 
-    do{
+        do{
+            player = (player % 2) ? X : O;
+
+            showBoard(MODE_7X7, *boardValue7X7);
+            printf("\n\n");
+
+            printf("Masukan Posisi : ");
+            scanf("%d", &inputPos);
+
+            if(inputPos > 0 && inputPos <= 50){
+                putInputToBoard(inputPos, *boardValue7X7, MODE_7X7, &player);
+            } else {
+                printf("\nPosisi tidak valid\n");
+                player--;
+                Sleep(1000);
+            }
+
+            check = checkWin7x7(boardValue7X7);
+            system("cls");
+            player++;
+
+        } while(check == CONTINUE);
+
         showBoard(MODE_7X7, *boardValue7X7);
-        printf("\n\n");
-        printf("Masukan Posisi : ");
-        scanf("%d", &inputPos);
+        showWinner(player, check, winner) ;
+        player--;
 
-        if(inputPos > 0 && inputPos <= 50){
-            // putInputToBoard(inputPos, *boardValue7X7, MODE_7X7);
-        } else {
-            printf("\nPosisi tidak valid\n");
-            Sleep(1000);
-        }
+        getch() ;
         system("cls");
-    } while(true);
+    } while(1);
 }
 
 int main()
