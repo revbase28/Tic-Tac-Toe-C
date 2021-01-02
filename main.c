@@ -409,7 +409,7 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
             pos.y = (inputPos-1) % 3;
 
             if( *((boardValue + pos.x*3) + pos.y) != O && *((boardValue + pos.x*3) + pos.y) != X){
-                if (*player % 2)
+                if (*player == O)
                     *((boardValue + pos.x*3) + pos.y) = O;
                 else
                     *((boardValue + pos.x*3) + pos.y) = X;
@@ -483,7 +483,7 @@ int CheckWin3x3(int Board[3][3]){
 void theWinner(int player, char winner[10]){
     if (player == O)
         strcpy(winner, "Player") ;
-    else
+    else if (player == X)
         strcpy(winner, "Bot") ;
 }
 
@@ -501,13 +501,13 @@ void play3X3(int difficulty){
     int boardValue3X3 [3][3];
     int inputPos;
     int Check = CONTINUE ;
-    int player = X;
+    int player = O;
     char winner[10] ;
 
     initBoardValue(*boardValue3X3, 3);
 
     do{
-        player = (player % 2) ? X : O;
+        player = (player % 2);
 
         showBoard(MODE_3X3, *boardValue3X3);
         printf("\n\n");
@@ -518,14 +518,15 @@ void play3X3(int difficulty){
             putInputToBoard(inputPos, *boardValue3X3, MODE_3X3, &player);
         } else {
             printf("\nPosisi tidak valid\n");
-            player--;
+            player++;
             Sleep(1000);
         }
         system("cls");
 
         Check = CheckWin3x3(boardValue3X3) ;
-
-        player++;
+        
+        if (Check == CONTINUE)
+            player--;
 
     } while(Check == CONTINUE);
 
