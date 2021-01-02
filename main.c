@@ -18,7 +18,6 @@ const int WIN = 1;
 const int DRAW = -1;
 const int CONTINUE = 0;
 
-
 typedef struct{
     int x;
     int y;
@@ -493,10 +492,11 @@ int checkWin7x7(int board[7][7]){
 
     //Check Horizontally
     for(i = 0; i < 7 ; i++){
+        sameCount = 1;
         for(j = 0 ; j < 6 ; j++){
             checkedChar = board[i][j] == X ? X : board[i][j] == O ? O : board[i][j];
 
-            if(checkedChar != X && checkedChar != O){}
+            if((checkedChar != X && checkedChar != O) || (board[6][6] != X && board[6][6] != O))
                 countBlank++;
 
             if(checkedChar == board[i][j + 1])
@@ -513,6 +513,7 @@ int checkWin7x7(int board[7][7]){
 
     //Check Vertically
     for(i = 0; i < 7 ; i++){
+        sameCount = 1;
         for(j = 0 ; j < 6 ; j++){
             checkedChar = board[j][i] == X ? X : board[j][i] == O ? O : board[j][i];
             if(checkedChar == board[j + 1][i])
@@ -534,8 +535,8 @@ int checkWin7x7(int board[7][7]){
         k = 0;
         l = iteration;
 
+        sameCount = 1;
         while(i < 6 && j < 6){
-
             checkedChar = board[i][j] == X ? X : board[i][j] == O ? O : board[i][j];
             if(checkedChar == board[i + 1][j + 1])
                 sameCount++;
@@ -667,7 +668,7 @@ void play3X3(int difficulty){
     } while(Check == CONTINUE);
 
     showBoard(MODE_3X3, *boardValue3X3);
-    showWinner(player, Check, winner) ;
+    showWinner(player, Check, winner);
 
     getch() ;
 }
@@ -701,7 +702,6 @@ void play7X7(int difficulty){
     int player = X;
     char winner[10] = {};
 
-
     do {
         initBoardValue(*boardValue7X7, 7);
 
@@ -710,6 +710,7 @@ void play7X7(int difficulty){
 
             showBoard(MODE_7X7, *boardValue7X7);
             printf("\n\n");
+
             printf("Masukan Posisi : ");
             scanf("%d", &inputPos);
 
