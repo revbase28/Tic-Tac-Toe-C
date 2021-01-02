@@ -442,7 +442,7 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
             pos.y = (inputPos-1) % 7;
 
             if( *((boardValue + pos.x*7) + pos.y) != 0 && *((boardValue + pos.x*7) + pos.y) != -1)
-                if (*player % 2)
+                if (*player == O)
                     *((boardValue + pos.x*7) + pos.y) = O;
                 else
                     *((boardValue + pos.x*7) + pos.y) = X;
@@ -641,37 +641,39 @@ void play3X3(int difficulty){
     int Check = CONTINUE ;
     int player = O;
     char winner[10] = {};
-  
+
     initBoardValue(*boardValue3X3, 3);
 
-    do{
-        player = (player % 2);
+    do {
+        do {
+            player = (player % 2);
+
+            showBoard(MODE_3X3, *boardValue3X3);
+            printf("\n\n");
+            printf("Masukan Posisi : ");
+            scanf("%d", &inputPos);
+
+            if(inputPos > 0 && inputPos <= 9){
+                putInputToBoard(inputPos, *boardValue3X3, MODE_3X3, &player);
+            } else {
+                printf("\nPosisi tidak valid\n");
+                player++;
+                Sleep(1000);
+            }
+            system("cls");
+
+            Check = CheckWin3x3(boardValue3X3) ;
+
+            if (Check == CONTINUE)
+                player--;
+
+        } while(Check == CONTINUE);
 
         showBoard(MODE_3X3, *boardValue3X3);
-        printf("\n\n");
-        printf("Masukan Posisi : ");
-        scanf("%d", &inputPos);
+        showWinner(player, Check, winner);
 
-        if(inputPos > 0 && inputPos <= 9){
-            putInputToBoard(inputPos, *boardValue3X3, MODE_3X3, &player);
-        } else {
-            printf("\nPosisi tidak valid\n");
-            player++;
-            Sleep(1000);
-        }
-        system("cls");
-
-        Check = CheckWin3x3(boardValue3X3) ;
-        
-        if (Check == CONTINUE)
-            player--;
-
-    } while(Check == CONTINUE);
-
-    showBoard(MODE_3X3, *boardValue3X3);
-    showWinner(player, Check, winner);
-
-    getch() ;
+        getch() ;
+    } while(1);
 }
 
 void play5X5(int difficulty){
@@ -700,14 +702,14 @@ void play7X7(int difficulty){
     int boardValue7X7 [7][7];
     int inputPos;
     int check = CONTINUE;
-    int player = X;
+    int player = O;
     char winner[10] = {};
 
     do {
         initBoardValue(*boardValue7X7, 7);
 
         do{
-            player = (player % 2) ? X : O;
+            player = (player % 2);
 
             showBoard(MODE_7X7, *boardValue7X7);
             printf("\n\n");
@@ -719,19 +721,20 @@ void play7X7(int difficulty){
                 putInputToBoard(inputPos, *boardValue7X7, MODE_7X7, &player);
             } else {
                 printf("\nPosisi tidak valid\n");
-                player--;
+                player++;
                 Sleep(1000);
             }
 
             check = checkWin7x7(boardValue7X7);
             system("cls");
-            player++;
+
+            if (check == CONTINUE)
+                player--;
 
         } while(check == CONTINUE);
 
         showBoard(MODE_7X7, *boardValue7X7);
         showWinner(player, check, winner) ;
-        player--;
 
         getch() ;
         system("cls");
