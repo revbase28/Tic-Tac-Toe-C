@@ -770,9 +770,9 @@ int checkWin7x7(int board[7][7]){
 }
 
 void theWinner(int player, char winner[10]){
-    if (player == O)
+    if (player == X)
         strcpy(winner, "Player") ;
-    else if (player == X)
+    else if (player == O)
         strcpy(winner, "Bot") ;
 }
 
@@ -790,7 +790,7 @@ void play3X3(int difficulty){
     int boardValue3X3 [3][3];
     int inputPos;
     int check = CONTINUE ;
-    int player = O;
+    int player = X;
     char winner[10] = {};
 
     do {
@@ -824,6 +824,7 @@ void play3X3(int difficulty){
         showWinner(player, check, winner);
 
         getch() ;
+        system("cls");
     } while(1);
 }
 
@@ -831,7 +832,7 @@ void play5X5(int difficulty){
     int boardValue5X5 [5][5];
     int inputPos;
     int check = CONTINUE ;
-    int player = O;
+    int player = X;
     char winner[10] = {};
 
     do{
@@ -873,7 +874,7 @@ void play7X7(int difficulty){
     int boardValue7X7 [7][7];
     int inputPos;
     int check = CONTINUE;
-    int player = O;
+    int player = X;
     char winner[10] = {};
 
     do {
