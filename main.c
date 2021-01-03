@@ -739,7 +739,7 @@ int checkWin7x7(int board[7][7]){
             else
                 sameCount = 1;
 
-            if(sameCount == 4)
+            if(sameCount == 5)
                 return WIN;
 
             i++;
@@ -754,7 +754,7 @@ int checkWin7x7(int board[7][7]){
             else
                 sameCount = 1;
 
-            if(sameCount == 4)
+            if(sameCount == 5)
                 return WIN;
 
             k++;
