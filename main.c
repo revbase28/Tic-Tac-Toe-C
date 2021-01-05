@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <conio.h>
+#include <math.h>
 
 //Constant
 const int MODE_3X3 = 1;
@@ -769,6 +770,29 @@ int checkWin7x7(int board[7][7]){
     return CONTINUE;
 }
 
+void checkAvailableSpot(int *boardValue, Position *pos, int num, int *count){
+    for(int i = 0; i < num ; i++){
+        for(int j = 0 ; j < num ; j++){
+            if (*((boardValue + i*num) + j) != X && *((boardValue + i*num) + j) != O ) {
+                pos[*count].x = i;
+                pos[*count].y = j;
+                (*count)++;
+            }
+        }
+    }
+}
+
+//Still Dummy
+void botHard(int *boardValue, int maxAvailabeSpot){
+    Position availableSpot[maxAvailabeSpot];
+    int availableCount = 0;
+
+    checkAvailableSpot(boardValue, availableSpot, (int)sqrt(maxAvailabeSpot), &availableCount);
+
+    for(int i = 0; i < availableCount; i++)
+        printf("(%d, %d)\n", availableSpot[i].x, availableSpot[i].y);
+}
+
 void theWinner(int player, char winner[10]){
     if (player == X)
         strcpy(winner, "Player") ;
@@ -815,8 +839,10 @@ void play3X3(int difficulty){
 
             check = checkWin3x3(boardValue3X3) ;
 
-            if (check == CONTINUE)
+            if (check == CONTINUE){
+                botHard(*boardValue3X3, 9);
                 player--;
+            }
 
         } while(check == CONTINUE);
 
@@ -857,8 +883,9 @@ void play5X5(int difficulty){
             check = checkWin5x5(boardValue5X5);
             system("cls");
 
-            if (check == CONTINUE)
+            if (check == CONTINUE){
                 player--;
+            }
 
         } while(check == CONTINUE);
 
