@@ -889,7 +889,11 @@ void play3X3(int difficulty){
             showBoard(MODE_3X3, *boardValue3X3);
 
             if(player == O){
-                botHard(*boardValue3X3, MODE_3X3);
+                switch(difficulty){
+                    //hard
+                    case 3 : botHard(*boardValue3X3, MODE_3X3);
+                    break;
+                }
             }
 
             else {
