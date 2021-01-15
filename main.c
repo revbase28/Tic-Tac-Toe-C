@@ -64,6 +64,20 @@ void chooseDifficulty(int *difficulty){
     } while(*difficulty!= EASY && *difficulty != MEDIUM && *difficulty != HARD);
 }
 
+void inputAmountOfSession(int *session){
+    do{
+        showProgramTitle();
+        printf("Ingin berapa kali main (maks 9) : " );
+        scanf("%d", session);
+        if (*session < 1 || *session > 9){
+            printf("Jumlah sesi melebihi batas");
+            Sleep(1500);
+        }
+
+        system("cls");
+    } while(*session < 1 || *session > 9);
+}
+
 void initBoardValue(int *arr, int maxBox){
     int boardIndex = 1;
     for(int i = 0; i < maxBox; i++){
@@ -803,6 +817,33 @@ void showWinner(int player, int check, char winner[10]){
     }
 }
 
+void showGameWinner(int playerCount, int botCount){
+    printf("\n\n ==> %s \n", playerCount > botCount ? "Player Win The Game" : playerCount == botCount ? "Game Draw" : "Bot Win The Game");
+}
+
+void setWinOrDrawCount(int player, int check, int *botCount, int *playerCount, int *drawCount){
+    if(check == DRAW){
+       (*drawCount)++;
+    } else if(check == WIN) {
+        if(player == X)
+            (*playerCount)++;
+        else
+           (*botCount)++;
+    }
+}
+
+void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
+    printf("             SCOREBOARD\n");
+    printf("  ________    _________     ________\n");
+    printf(" |        |  |         |   |        |\n");
+    printf(" | Player |  |   Bot   |   |  Draw  |\n");
+    printf(" |   %d    |  |    %d    |   |   %d    |\n", playerCount, botCount, drawCount);
+    printf(" |________|  |_________|   |________|\n");
+    printf("\n");
+    printf("            Game Tersisa\n");
+    printf("                 %d\n", session);
+}
+
 int minimax(int *boardValue, int depth, bool isBot, int mode){
     int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
@@ -873,12 +914,16 @@ void botHard(int *boardValue, int mode){
     *((boardValue + move.x*maxBox) + move.y) = O;
 }
 
-void play3X3(int difficulty){
+void play3X3(int difficulty, int session){
     int boardValue3X3 [3][3];
     int inputPos;
     int check = CONTINUE ;
     int player = X;
     char winner[10] = {};
+    int botWinCount = 0;
+    int playerWinCount = 0;
+    int drawCount = 0;
+    int initialSession = session;
 
     do {
         initBoardValue(*boardValue3X3, 3);
@@ -886,6 +931,7 @@ void play3X3(int difficulty){
         do {
             player = (player % 2);
 
+            showScoreBoard(playerWinCount, botWinCount, drawCount, session);
             showBoard(MODE_3X3, *boardValue3X3);
 
             if(player == O){
@@ -919,15 +965,21 @@ void play3X3(int difficulty){
 
         } while(check == CONTINUE);
 
+
         showBoard(MODE_3X3, *boardValue3X3);
         showWinner(player, check, winner);
+        setWinOrDrawCount(player, check, &botWinCount, &playerWinCount, &drawCount);
 
         getch() ;
         system("cls");
-    } while(1);
+        session--;
+    } while(session > 0);
+
+    showScoreBoard(playerWinCount, botWinCount, drawCount, session);
+    showGameWinner(playerWinCount, botWinCount);
 }
 
-void play5X5(int difficulty){
+void play5X5(int difficulty, int session){
     int boardValue5X5 [5][5];
     int inputPos;
     int check = CONTINUE ;
@@ -972,7 +1024,7 @@ void play5X5(int difficulty){
     }while(1) ;
 }
 
-void play7X7(int difficulty){
+void play7X7(int difficulty, int session){
     int boardValue7X7 [7][7];
     int inputPos;
     int check = CONTINUE;
@@ -1018,21 +1070,23 @@ int main()
 {
     int mode;
     int difficullty;
+    int session;
 
     chooseMode(&mode);
     chooseDifficulty(&difficullty);
+    inputAmountOfSession(&session);
 
     switch(mode){
         case 1 :
-            play3X3(difficullty);
+            play3X3(difficullty, session);
         break;
 
         case 2 :
-            play5X5(difficullty);
+            play5X5(difficullty, session);
         break;
 
         case 3 :
-            play7X7(difficullty);
+            play7X7(difficullty, session);
         break;
     }
 
