@@ -888,17 +888,34 @@ int minimax(int *boardValue, int depth, bool isBot, int mode){
         return bestScore;
     }
 }
+void botEasy(int *boardValue, int mode){
+    int bestScore = -1000;
+    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    int j ;
+    Position move;
+
+    for(int i = 0; i < maxBox ; i++){
+        for(j = 0; j < maxBox; j++){
+            if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
+                *((boardValue + i*maxBox) + j) = O;
+                return ;
+            }
+        }
+    }
+}
 
 void botHard(int *boardValue, int mode){
     int bestScore = -1000;
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    int j ;
     Position move;
 
     for(int i = 0; i < maxBox ; i++){
-        for(int j = 0; j < maxBox; j++){
+        for(j = 0; j < maxBox; j++){
             if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                 int lastValue = *((boardValue + i*maxBox) + j);
                 *((boardValue + i*maxBox) + j) = O;
+                return ;
                 int score = minimax(boardValue, HARD_DEPTH, false, mode);
                 *((boardValue + i*maxBox) + j) = lastValue;
 
@@ -936,6 +953,9 @@ void play3X3(int difficulty, int session){
 
             if(player == O){
                 switch(difficulty){
+                    //easy
+                    case 1 : botEasy(*boardValue3X3, MODE_3X3) ;
+                    break ;
                     //hard
                     case 3 : botHard(*boardValue3X3, MODE_3X3);
                     break;
