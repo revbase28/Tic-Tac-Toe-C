@@ -27,6 +27,11 @@ const char* SCORE_FILE = "data_files/score.dat";
 
 void login();
 int main();
+void chooseMode(int *mode);
+void chooseDifficulty(int *difficulty);
+void inputAmountOfSession(int *session);
+
+char activeUname[20] = {};
 
 typedef struct{
     int x;
@@ -34,14 +39,18 @@ typedef struct{
 } Position;
 
 typedef struct {
-    char uname[20];
-    char password[20];
+    char uname[21];
+    char password[21];
 } Account;
 
 void showProgramTitle(){
     printf("====================================\n");
     printf("             TIC TAC TOE\n");
     printf("====================================\n\n");
+
+    if(strlen(activeUname) != 0){
+        printf("User aktif : %s\n\n", activeUname);
+    }
 }
 
 void daftar(){
@@ -49,6 +58,9 @@ void daftar(){
     fAccount = fopen(ACCOUNT_FILE, "rb");
     Account acc,buffer;
     bool is_open_in_wb = false, is_uname_taken = false;
+
+    memset(acc.uname, 0, sizeof(acc.uname));
+    memset(acc.password, 0, sizeof(acc.password));
 
     showProgramTitle();
     printf("============== Daftar ==============\n\n");
@@ -119,7 +131,7 @@ void login(){
     char pass[20] = {};
 
     showProgramTitle();
-    printf("\tLogin\n");
+    printf("=============== Login ==============\n\n");
 
     if(fAccount == NULL){
         printf("Belum ada Akun terdaftar");
@@ -148,7 +160,7 @@ void login(){
                 }
                 system("cls");
                 showProgramTitle();
-                printf("\tLogin\n");
+                printf("=============== Login ==============\n\n");
             }while(!feof(fAccount));
 
             printf("Masukan password : ");
@@ -161,12 +173,45 @@ void login(){
                 Sleep(2000);
                 system("cls");
                 showProgramTitle();
-                printf("\tLogin\n");
+                rewind(fAccount);
+                printf("=============== Login ==============\n\n");
             }
         }while(strcmp(buffer.password, pass) != 0);
     }
+
+    strcpy(activeUname, buffer.uname);
+
     system("cls");
     fclose(fAccount);
+}
+
+void mainMenu(){
+    int choice;
+    int mode;
+    int difficullty;
+    int session;
+
+    showProgramTitle();
+    printf("(1) Play  (2) HighScore  (3) Logout\n\n");
+    printf("Pilih : ");
+    scanf("%d", &choice);
+
+    switch(choice){
+        case 1 :
+            system("cls");
+            chooseMode(&mode);
+            chooseDifficulty(&difficullty);
+            inputAmountOfSession(&session);
+
+            play(difficullty, session, mode);
+        break;
+
+        case 3 :
+            memset(activeUname, 0, sizeof(activeUname));
+            system("cls");
+            main();
+        break;
+    }
 }
 
 void chooseMode(int *mode){
@@ -1062,6 +1107,7 @@ void play(int difficulty, int session, int mode){
     int drawCount = 0;
     int initialSession = session;
     Position availabeSpot[49] = {};
+    int choice;
 
     do {
 
@@ -1132,42 +1178,56 @@ void play(int difficulty, int session, int mode){
         session--;
     } while(session > 0);
 
-    showScoreBoard(playerWinCount, botWinCount, drawCount, session);
-    showGameWinner(playerWinCount, botWinCount);
+    do{
+        showScoreBoard(playerWinCount, botWinCount, drawCount, session);
+        showGameWinner(playerWinCount, botWinCount);
+
+        printf("\n(1) Main Lagi\t(2) Ke Main Menu\n\n");
+        printf("Pilih : ");
+        scanf("%d", &choice);
+
+        if(choice < 1 || choice > 2){
+            printf("Inputan tidak valid");
+            system("cls");
+        } else{
+            system("cls");
+            switch(choice){
+                case 1 : play(difficulty, initialSession, mode);
+                    break;
+                case 2 : mainMenu();
+                    break;
+            }
+        }
+    } while(choice < 1 || choice > 2);
 }
 
 int main()
 {
-    int mode;
-    int difficullty;
-    int session;
     int choice;
     do{
         showProgramTitle();
-        printf("(1) Login\t(2) Daftar\n\n");
+        printf("(1) Login    (2) Daftar    (3) Exit\n\n");
         printf("Pilih : ");
         scanf("%d", &choice);
 
-        if(choice != 1 && choice != 2){
+        if(choice < 1 || choice > 3){
             printf("Inputan tidak valid\n");
             Sleep(2000);
         } else {
             system("cls");
-            if(choice == 1)
-                login();
-            else
-                daftar();
+            switch(choice){
+                case 1 : login();
+                    break;
+                case 2 : daftar();
+                    break;
+                case 3 : exit(0);
+                    break;
+           }
         }
 
-        system("cls");
+    }while(choice < 1 || choice > 3);
 
-    }while(choice != 1 && choice != 2);
-
-    chooseMode(&mode);
-    chooseDifficulty(&difficullty);
-    inputAmountOfSession(&session);
-
-    play(difficullty, session, mode);
+    mainMenu();
 
     return 0;
 }
