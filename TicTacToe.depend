@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1610719732 source:c:\collegemadeprogram\s1\c\tictactoe\main.c
+1611494283 source:c:\collegemadeprogram\s1\c\tictactoe\main.c
 	<stdio.h>
 	<stdlib.h>
 	<windows.h>
