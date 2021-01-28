@@ -43,6 +43,13 @@ typedef struct {
     char password[21];
 } Account;
 
+typedef struct {
+    char uname[21];
+    int winEasy;
+    int winMed;
+    int winHard;
+} Score;
+
 void showProgramTitle(){
     printf("====================================\n");
     printf("             TIC TAC TOE\n");
@@ -185,6 +192,92 @@ void login(){
     fclose(fAccount);
 }
 
+void highScore(){
+    FILE *f;
+    Score highScore;
+    f = fopen(SCORE_FILE, "rb");
+    int i = 1;
+    if(f!= NULL){
+        memset(highScore.uname, 0, sizeof(highScore.uname));
+        fread(&highScore, sizeof(highScore), 1, f);
+        while(!feof(f)){
+            printf("%d %s %d %d %d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard);
+            memset(highScore.uname, 0, sizeof(highScore.uname));
+            fread(&highScore, sizeof(highScore), 1, f);
+            i++;
+        }
+    } else {
+        printf("Belum ada highscore");
+    }
+
+    fclose(f);
+}
+
+void writeScore(int difficulty){
+    FILE *f;
+    f = fopen(SCORE_FILE, "r+");
+    Score buffer;
+    int filePos = 0;
+
+    if(f == NULL){
+        fclose(f);
+        f = fopen(SCORE_FILE, "w+");
+    }
+
+    memset(buffer.uname, 0, sizeof(buffer.uname));
+    while(!feof(f)){
+        if(fread(&buffer, sizeof(buffer), 1, f)){
+            if(strcmp(buffer.uname, activeUname) == 0){
+                switch(difficulty){
+                    case 1 :
+                        buffer.winEasy++;
+                        break;
+                    case 2 :
+                        buffer.winMed++;
+                        break;
+                    case 3 :
+                        buffer.winHard++;
+                        break;
+                }
+                fseek(f, (filePos  * sizeof(buffer)), SEEK_SET);
+                fwrite(&buffer, 1, sizeof(buffer), f);
+                break;
+            } else {
+                filePos++;
+                memset(buffer.uname, 0, sizeof(buffer.uname));
+            }
+        }
+    }
+
+    if(feof(f)){
+        Sleep(2000);
+        fclose(f);
+        f = fopen(SCORE_FILE, "a+");
+
+        int easy = 0, medium = 0, hard = 0;
+        switch(difficulty){
+            case 1 :
+                easy++;
+                break;
+            case 2 :
+                medium++;
+                break;
+            case 3 :
+                hard++;
+                break;
+        }
+
+        Score newScore;
+        memset(newScore.uname, 0, sizeof(newScore.uname));
+        strcpy(newScore.uname, activeUname);
+        newScore.winEasy = easy;
+        newScore.winMed = medium;
+        newScore.winHard = hard;
+        fwrite(&newScore, sizeof(newScore), 1, f);
+    }
+
+    fclose(f);
+}
 void mainMenu(){
     int choice;
     int mode;
@@ -205,6 +298,11 @@ void mainMenu(){
 
             play(difficullty, session, mode);
         break;
+
+        case 2 :
+            system("cls");
+            highScore();
+            break;
 
         case 3 :
             memset(activeUname, 0, sizeof(activeUname));
@@ -1177,6 +1275,9 @@ void play(int difficulty, int session, int mode){
         system("cls");
         session--;
     } while(session > 0);
+
+    if(playerWinCount > botWinCount)
+        writeScore(difficulty);
 
     do{
         showScoreBoard(playerWinCount, botWinCount, drawCount, session);
