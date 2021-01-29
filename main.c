@@ -48,6 +48,7 @@ typedef struct {
     int winEasy;
     int winMed;
     int winHard;
+    int totalPoin;
 } Score;
 
 void showProgramTitle(){
@@ -197,11 +198,19 @@ void highScore(){
     Score highScore;
     f = fopen(SCORE_FILE, "rb");
     int i = 1;
+    makeOutputWhite();
+    printf("======================= Highscore =========================\n");
+    printf("===========================================================\n");
+    printf(" No   Username\t\tEasy\tMedium\tHard\tTotal Poin\n");
+    printf("===========================================================\n");
     if(f!= NULL){
         memset(highScore.uname, 0, sizeof(highScore.uname));
         fread(&highScore, sizeof(highScore), 1, f);
         while(!feof(f)){
-            printf("%d %s %d %d %d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard);
+            if(strcmp(highScore.uname, activeUname) == 0)
+                makeOutputBlue();
+            printf(" %d    %s\t\t%d\t%d\t%d\t%d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
+            makeOutputWhite();
             memset(highScore.uname, 0, sizeof(highScore.uname));
             fread(&highScore, sizeof(highScore), 1, f);
             i++;
@@ -211,6 +220,10 @@ void highScore(){
     }
 
     fclose(f);
+}
+
+int countTotalPoin(int winEasy, int winMed, int winHard){
+    return (winEasy * 3) + (winMed * 5) + (winHard * 7);
 }
 
 void writeScore(int difficulty){
@@ -239,6 +252,7 @@ void writeScore(int difficulty){
                         buffer.winHard++;
                         break;
                 }
+                buffer.totalPoin = countTotalPoin(buffer.winEasy, buffer.winMed, buffer.winHard);
                 fseek(f, (filePos  * sizeof(buffer)), SEEK_SET);
                 fwrite(&buffer, 1, sizeof(buffer), f);
                 break;
@@ -273,11 +287,13 @@ void writeScore(int difficulty){
         newScore.winEasy = easy;
         newScore.winMed = medium;
         newScore.winHard = hard;
+        newScore.totalPoin = countTotalPoin(newScore.winEasy, newScore.winMed, newScore.winHard);
         fwrite(&newScore, sizeof(newScore), 1, f);
     }
 
     fclose(f);
 }
+
 void mainMenu(){
     int choice;
     int mode;
@@ -1314,6 +1330,7 @@ int main()
         if(choice < 1 || choice > 3){
             printf("Inputan tidak valid\n");
             Sleep(2000);
+            system("cls");
         } else {
             system("cls");
             switch(choice){
