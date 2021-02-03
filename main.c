@@ -5,6 +5,11 @@
 #include <stdbool.h>
 #include <conio.h>
 #include <math.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <time.h>
+
+#define ESC 27
 
 //Constant
 const int MODE_3X3 = 1;
@@ -21,17 +26,400 @@ const int CONTINUE = 0;
 const int BOT_WIN = 10;
 const int PLAYER_WIN = -10;
 const int TIE = 0;
-const int HARD_DEPTH = -100;
+const int MEDIUM_DEPTH = 4 ;
+const int HARD_DEPTH = 6;
+const int ALPHA = -1000;
+const int BETA = 1000;
+const char* ACCOUNT_FILE = "data_files/account.dat";
+const char* SCORE_FILE = "data_files/score.dat";
+
+bool isTimeout = false;
+int maxTime = 10000;
+int startTime;
+
+void login();
+int main();
+void mainMenu();
+void chooseMode(int *mode);
+void chooseDifficulty(int *difficulty);
+void inputAmountOfSession(int *session);
+void play(int difficulty, int session, int mode);
+
+char activeUname[20] = {};
 
 typedef struct{
     int x;
     int y;
 } Position;
 
+typedef struct {
+    char uname[21];
+    char password[21];
+} Account;
+
+typedef struct {
+    char uname[21];
+    int winEasy;
+    int winMed;
+    int winHard;
+    int totalPoin;
+} Score;
+
+
+void makeOutputWhite(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 15);
+}
+
+void makeOutputRed(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 12);
+}
+
+void makeOutputBlue(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 9);
+}
+
 void showProgramTitle(){
-    printf("===================================\n");
-    printf("            TIC TAC TOE\n");
-    printf("===================================\n\n");
+    printf("====================================\n");
+    printf("             TIC TAC TOE\n");
+    printf("====================================\n\n");
+
+    if(strlen(activeUname) != 0){
+        printf("User aktif : %s\n\n", activeUname);
+    }
+}
+
+void daftar(){
+    FILE *fAccount;
+    fAccount = fopen(ACCOUNT_FILE, "rb");
+    Account acc,buffer;
+    bool is_open_in_wb = false, is_uname_taken = false;
+
+    memset(acc.uname, 0, sizeof(acc.uname));
+    memset(acc.password, 0, sizeof(acc.password));
+
+    showProgramTitle();
+    printf("============== Daftar ==============\n\n");
+
+    if(fAccount == NULL){
+        fAccount = fopen(ACCOUNT_FILE, "wb");
+        is_open_in_wb = true;
+
+        if(fAccount == NULL){
+            printf("Error creating file");
+            Sleep(2000);
+            system("cls");
+            main();
+        }
+    }
+
+    if(fAccount != NULL){
+        do{
+            is_uname_taken = false;
+            do{
+                printf("Masukan username (Maks 20 karakter) : ");
+                scanf(" %[^\n]%*c", acc.uname);
+
+                if(strlen(acc.uname) > 20){
+                    printf("Jumlah karakter melebihi batas");
+                    Sleep(1500);
+                    memset(acc.uname, 0, sizeof(acc.uname));
+                    system("cls");
+                    showProgramTitle();
+                    printf("============== Daftar ==============\n\n");
+                }
+
+            } while(strlen(acc.uname) == 0);
+
+            if(!is_open_in_wb){
+                while(!feof(fAccount)){
+                    fread(&buffer, sizeof(buffer), 1, fAccount);
+                    if(strcmp(buffer.uname, acc.uname) == 0){
+                        is_uname_taken = true;
+                        break;
+                    }
+                }
+
+                if(is_uname_taken){
+                    printf("Username telah terpakai\n");
+                    Sleep(1500);
+                    system("cls");
+                    rewind(fAccount);
+                    showProgramTitle();
+                    printf("============== Daftar ==============\n\n");
+                }
+            }
+        }while(is_uname_taken);
+
+        fclose(fAccount);
+        fAccount = fopen(ACCOUNT_FILE, "a+b");
+
+        printf("Masukan password : ");
+        scanf(" %[^\n]%*c", acc.password);
+
+        if(fwrite(&acc, sizeof(acc), 1, fAccount)){
+            system("cls");
+            fclose(fAccount);
+            login();
+        } else {
+            printf("Gagal mendaftarkan username");
+            Sleep(2000);
+            system("cls");
+            fclose(fAccount);
+            main();
+        }
+    }
+}
+
+void login(){
+    FILE *fAccount;
+    fAccount = fopen(ACCOUNT_FILE, "r");
+    Account buffer;
+    char uname[20] = {};
+    char pass[20] = {};
+
+    showProgramTitle();
+    printf("=============== Login ==============\n\n");
+
+    if(fAccount == NULL){
+        printf("Belum ada Akun terdaftar");
+        Sleep(2000);
+        system("cls");
+        fclose(fAccount);
+        daftar();
+    } else {
+        do{
+            do {
+                printf("Masukan username : ");
+                scanf(" %[^\n]%*c", uname);
+
+                while(!feof(fAccount)){
+                    fread(&buffer, sizeof(buffer), 1, fAccount);
+                    if(strcmp(buffer.uname, uname) == 0)
+                        break;
+                }
+
+                if(feof(fAccount)){
+                    rewind(fAccount);
+                    printf("Username tidak terdaftar");
+                    Sleep(2000);
+                } else {
+                    break;
+                }
+                system("cls");
+                showProgramTitle();
+                printf("=============== Login ==============\n\n");
+            }while(!feof(fAccount));
+
+            printf("Masukan password : ");
+            scanf(" %[^\n]%*c", pass);
+
+            if(strcmp(buffer.password, pass) == 0){
+                break;
+            } else{
+                printf("Password Salah");
+                Sleep(2000);
+                system("cls");
+                showProgramTitle();
+                rewind(fAccount);
+                printf("=============== Login ==============\n\n");
+            }
+        }while(strcmp(buffer.password, pass) != 0);
+    }
+
+    strcpy(activeUname, buffer.uname);
+
+    system("cls");
+    fclose(fAccount);
+}
+
+void highScore(){
+    FILE *f;
+    Score highScore;
+    f = fopen(SCORE_FILE, "rb");
+    int i = 1;
+    makeOutputWhite();
+    printf("Tekan ESC untuk kembali ke menu utama\n\n");
+    printf("======================= Highscore =========================\n");
+    printf("===========================================================\n");
+    printf(" No   Username\t\tEasy\tMedium\tHard\tTotal Poin\n");
+    printf("===========================================================\n");
+    if(f!= NULL){
+        memset(highScore.uname, 0, sizeof(highScore.uname));
+        fread(&highScore, sizeof(highScore), 1, f);
+        while(!feof(f)){
+            if(strcmp(highScore.uname, activeUname) == 0)
+                makeOutputBlue();
+            printf(" %d    %s\t\t%d\t%d\t%d\t%d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
+            makeOutputWhite();
+            memset(highScore.uname, 0, sizeof(highScore.uname));
+            fread(&highScore, sizeof(highScore), 1, f);
+            i++;
+        }
+    } else {
+        printf("Belum ada highscore");
+    }
+
+    fclose(f);
+
+    char ch;
+    do {
+        ch = getch();
+        if(ch == ESC){
+            system("cls");
+            mainMenu();
+        }
+    } while(ch != ESC);
+}
+
+int countTotalPoin(int winEasy, int winMed, int winHard){
+    return (winEasy * 3) + (winMed * 5) + (winHard * 7);
+}
+
+void sortScore(){
+    FILE *f = fopen(SCORE_FILE, "r+b");
+    Score buffer1;
+    Score buffer2;
+    int filePos = 0;
+    int i = 1;
+
+    memset(buffer1.uname, 0, sizeof(buffer1.uname));
+    memset(buffer2.uname, 0, sizeof(buffer2.uname));
+
+    fseek(f, filePos*sizeof(buffer1), SEEK_SET);
+    fread(&buffer1, sizeof(buffer1), 1, f);
+    while(!feof(f)){
+        fseek(f, (filePos + i)*sizeof(buffer2), SEEK_SET);
+        fread(&buffer2, sizeof(buffer2), 1, f);
+        if(!feof(f)){
+            if(buffer1.totalPoin < buffer2.totalPoin){
+                fseek(f, filePos*sizeof(buffer1), SEEK_SET);
+                fwrite(&buffer2, sizeof(buffer2), 1, f);
+                fseek(f, (filePos + i)*sizeof(buffer1), SEEK_SET);
+                fwrite(&buffer1, sizeof(buffer1), 1, f);
+            }
+        } else {
+           filePos++;
+           i = 0;
+        }
+        memset(buffer1.uname, 0, sizeof(buffer1.uname));
+        memset(buffer2.uname, 0, sizeof(buffer2.uname));
+
+        fseek(f, filePos*sizeof(buffer1), SEEK_SET);
+        fread(&buffer1, sizeof(buffer1), 1, f);
+        i++;
+    }
+
+    fclose(f);
+
+}
+
+void writeScore(int difficulty){
+    FILE *f;
+    f = fopen(SCORE_FILE, "r+b");
+    Score buffer;
+    int filePos = 0;
+
+    if(f == NULL){
+        fclose(f);
+        f = fopen(SCORE_FILE, "wb+");
+    }
+
+    memset(buffer.uname, 0, sizeof(buffer.uname));
+    while(!feof(f)){
+        if(fread(&buffer, sizeof(buffer), 1, f)){
+            if(strcmp(buffer.uname, activeUname) == 0){
+                switch(difficulty){
+                    case 1 :
+                        buffer.winEasy++;
+                        break;
+                    case 2 :
+                        buffer.winMed++;
+                        break;
+                    case 3 :
+                        buffer.winHard++;
+                        break;
+                }
+                buffer.totalPoin = countTotalPoin(buffer.winEasy, buffer.winMed, buffer.winHard);
+                fseek(f, (filePos  * sizeof(buffer)), SEEK_SET);
+                fwrite(&buffer, 1, sizeof(buffer), f);
+                break;
+            } else {
+                filePos++;
+                memset(buffer.uname, 0, sizeof(buffer.uname));
+            }
+        }
+    }
+
+    if(feof(f)){
+        Sleep(1000);
+        f = fopen(SCORE_FILE, "a+b");
+
+        int easy = 0, medium = 0, hard = 0;
+        switch(difficulty){
+            case 1 :
+                easy++;
+                break;
+            case 2 :
+                medium++;
+                break;
+            case 3 :
+                hard++;
+                break;
+        }
+
+        Score newScore;
+        memset(newScore.uname, 0, sizeof(newScore.uname));
+        strcpy(newScore.uname, activeUname);
+        newScore.winEasy = easy;
+        newScore.winMed = medium;
+        newScore.winHard = hard;
+        newScore.totalPoin = countTotalPoin(newScore.winEasy, newScore.winMed, newScore.winHard);
+        fwrite(&newScore, sizeof(newScore), 1, f);
+    }
+
+    fclose(f);
+
+    sortScore();
+}
+
+void mainMenu(){
+    int choice;
+    int mode;
+    int difficullty;
+    int session;
+
+    showProgramTitle();
+    printf("(1) Play  (2) HighScore  (3) Logout\n\n");
+    printf("Pilih : ");
+    scanf("%d", &choice);
+
+    switch(choice){
+        case 1 :
+            system("cls");
+            chooseMode(&mode);
+            chooseDifficulty(&difficullty);
+            inputAmountOfSession(&session);
+
+            play(difficullty, session, mode);
+        break;
+
+        case 2 :
+            system("cls");
+            highScore();
+            break;
+
+        case 3 :
+            memset(activeUname, 0, sizeof(activeUname));
+            system("cls");
+            main();
+        break;
+    }
 }
 
 void chooseMode(int *mode){
@@ -86,25 +474,6 @@ void initBoardValue(int *arr, int maxBox){
             boardIndex++;
         }
     }
-}
-
-void makeOutputWhite(){
-    HANDLE hconsole;
-    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hconsole, 15);
-}
-
-void makeOutputRed(){
-    HANDLE hconsole;
-    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hconsole, 12);
-}
-
-
-void makeOutputBlue(){
-    HANDLE hconsole;
-    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hconsole, 9);
 }
 
 void determineOutputColor(char *charRep){
@@ -844,15 +1213,17 @@ void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
     printf("                 %d\n", session);
 }
 
-int minimax(int *boardValue, int depth, bool isBot, int mode){
+int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
     int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
 
-    if(result != CONTINUE || depth == 0){
-        if(result == DRAW || depth == 0)
+    if(result != CONTINUE || depth < 1){
+        if(result == WIN)
+            return isBot ? PLAYER_WIN : BOT_WIN;
+
+        else if(result == DRAW || depth < 1)
             return TIE;
 
-        return isBot ? PLAYER_WIN : BOT_WIN;
     }
 
     if(isBot){
@@ -862,9 +1233,13 @@ int minimax(int *boardValue, int depth, bool isBot, int mode){
                 if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                     int lastValue = *((boardValue + i*maxBox) + j);
                     *((boardValue + i*maxBox) + j) = O;
-                    int score = minimax(boardValue, depth -1, false, mode);
+                    int score = minimax(boardValue, depth -1, alpha, beta, false, mode);
                     *((boardValue + i*maxBox) + j) = lastValue;
                     bestScore = bestScore < score ? score : bestScore;
+                    alpha = alpha > score ? alpha : score;
+                    if(beta <= alpha){
+                        return alpha;
+                    }
                 }
             }
         }
@@ -878,9 +1253,13 @@ int minimax(int *boardValue, int depth, bool isBot, int mode){
                 if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                     int lastValue = *((boardValue + i*maxBox) + j);
                     *((boardValue + i*maxBox) + j) = X;
-                    int score = minimax(boardValue, depth -1, true, mode);
+                    int score = minimax(boardValue, depth -1, alpha, beta, true, mode);
                     *((boardValue + i*maxBox) + j) = lastValue;
                     bestScore = bestScore > score ? score : bestScore;
+                    beta = beta < score ? beta : score;
+                    if(beta <= alpha){
+                        return beta;
+                    }
                 }
             }
         }
@@ -889,34 +1268,28 @@ int minimax(int *boardValue, int depth, bool isBot, int mode){
     }
 }
 void botEasy(int *boardValue, int mode){
-    int bestScore = -1000;
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
-    int j ;
-    Position move;
+    Position availiablePos[maxBox*maxBox];
+    int ukuran = 0;
+    checkAvailableSpot(boardValue, availiablePos, maxBox, &ukuran);
 
-    for(int i = 0; i < maxBox ; i++){
-        for(j = 0; j < maxBox; j++){
-            if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
-                *((boardValue + i*maxBox) + j) = O;
-                return ;
-            }
-        }
-    }
+    srand(time(0));
+    int index = rand() % ukuran;
+
+    *((boardValue + availiablePos[index].x*maxBox) + availiablePos[index].y) = O;
 }
 
-void botHard(int *boardValue, int mode){
+void botMedium(int *boardValue, int mode){
     int bestScore = -1000;
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
-    int j ;
     Position move;
 
     for(int i = 0; i < maxBox ; i++){
-        for(j = 0; j < maxBox; j++){
+        for(int j = 0; j < maxBox; j++){
             if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                 int lastValue = *((boardValue + i*maxBox) + j);
                 *((boardValue + i*maxBox) + j) = O;
-                return ;
-                int score = minimax(boardValue, HARD_DEPTH, false, mode);
+                int score = minimax(boardValue, MEDIUM_DEPTH, ALPHA, BETA, false, mode);
                 *((boardValue + i*maxBox) + j) = lastValue;
 
                 if(bestScore < score){
@@ -931,8 +1304,46 @@ void botHard(int *boardValue, int mode){
     *((boardValue + move.x*maxBox) + move.y) = O;
 }
 
-void play3X3(int difficulty, int session){
-    int boardValue3X3 [3][3];
+void botHard(int *boardValue, int mode){
+    int bestScore = -1000;
+    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    Position move;
+
+    for(int i = 0; i < maxBox ; i++){
+        for(int j = 0; j < maxBox; j++){
+            if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
+                int lastValue = *((boardValue + i*maxBox) + j);
+                *((boardValue + i*maxBox) + j) = O;
+                int score = minimax(boardValue, HARD_DEPTH, ALPHA, BETA, false, mode);
+                *((boardValue + i*maxBox) + j) = lastValue;
+
+                if(bestScore < score){
+                    bestScore = score;
+                    move.x = i;
+                    move.y = j;
+                }
+            }
+        }
+    }
+
+    *((boardValue + move.x*maxBox) + move.y) = O;
+}
+
+void *threadTimer(){
+    isTimeout = false;
+
+    while(startTime <= maxTime){
+        Sleep(1000);
+        startTime++;
+    }
+    isTimeout = true;
+    startTime = 0;
+    return NULL;
+}
+
+void play(int difficulty, int session, int mode){
+    int boardTiles = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    int boardValue [boardTiles][boardTiles];
     int inputPos;
     int check = CONTINUE ;
     int player = X;
@@ -941,43 +1352,84 @@ void play3X3(int difficulty, int session){
     int playerWinCount = 0;
     int drawCount = 0;
     int initialSession = session;
+    int choice;
+
+    //maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : mode == MEDIUM ? 3 : 0);
 
     do {
-        initBoardValue(*boardValue3X3, 3);
+
+        initBoardValue(*boardValue, boardTiles);
 
         do {
             player = (player % 2);
 
             showScoreBoard(playerWinCount, botWinCount, drawCount, session);
-            showBoard(MODE_3X3, *boardValue3X3);
+            showBoard(mode, *boardValue);
 
             if(player == O){
                 switch(difficulty){
                     //easy
-                    case 1 : botEasy(*boardValue3X3, MODE_3X3) ;
-                    break ;
+                    case 1 : botEasy(*boardValue, mode);
+                        break;
+                    //medium
+                    case 2 : botMedium(*boardValue, mode);
+                        break ;
                     //hard
-                    case 3 : botHard(*boardValue3X3, MODE_3X3);
-                    break;
+                    case 3 : botHard(*boardValue, mode);
+                        break;
                 }
             }
 
             else {
                 printf("\n\n");
-                printf("Masukan Posisi : ");
+                printf("Batas waktu untuk menginput adalah %d detik", maxTime);
+                printf("\nMasukan Posisi : ");
+
+                pthread_t timer_thread;
+                startTime = 0;
+                pthread_create(&timer_thread, NULL, threadTimer, NULL);
+
                 scanf("%d", &inputPos);
 
-                if(inputPos > 0 && inputPos <= 9){
-                    putInputToBoard(inputPos, *boardValue3X3, MODE_3X3, &player);
+                if(isTimeout){
+                    printf("Melebihi batas waktu input");
+                    Sleep(1500);
+                    //if(pthread_kill(timer_thread, 0) == 0)
+                      //  printf("ad");
+                    startTime = 0;
                 } else {
-                    printf("\nPosisi tidak valid\n");
-                    player++;
-                    Sleep(1000);
+                    //pthread_kill(timer_thread, )
+                    startTime = 0;
+                    if(inputPos > 0 && inputPos <= pow(boardTiles,2)){
+                        putInputToBoard(inputPos, *boardValue, mode, &player);
+                    } else {
+                        printf("\nPosisi tidak valid\n");
+                        player++;
+                        Sleep(1000);
+                    }
                 }
             }
 
             system("cls");
-            check = checkWin3x3(boardValue3X3) ;
+
+            switch(mode){
+                //mode3x3
+                case 1 :
+                    check = checkWin3x3(boardValue) ;
+                break;
+
+                //mode5x5
+                case 2 :
+                    check = checkWin5x5(boardValue) ;
+                break;
+
+                //mode3x3
+                case 3 :
+                    check = checkWin7x7(boardValue) ;
+                break;
+
+
+            }
 
             if (check == CONTINUE){
                 player--;
@@ -986,7 +1438,7 @@ void play3X3(int difficulty, int session){
         } while(check == CONTINUE);
 
 
-        showBoard(MODE_3X3, *boardValue3X3);
+        showBoard(mode, *boardValue);
         showWinner(player, check, winner);
         setWinOrDrawCount(player, check, &botWinCount, &playerWinCount, &drawCount);
 
@@ -995,120 +1447,61 @@ void play3X3(int difficulty, int session){
         session--;
     } while(session > 0);
 
-    showScoreBoard(playerWinCount, botWinCount, drawCount, session);
-    showGameWinner(playerWinCount, botWinCount);
-}
-
-void play5X5(int difficulty, int session){
-    int boardValue5X5 [5][5];
-    int inputPos;
-    int check = CONTINUE ;
-    int player = X;
-    char winner[10] = {};
+    if(playerWinCount > botWinCount)
+        writeScore(difficulty);
 
     do{
-        initBoardValue(*boardValue5X5, 5);
+        showScoreBoard(playerWinCount, botWinCount, drawCount, session);
+        showGameWinner(playerWinCount, botWinCount);
 
-        do{
-            player = (player % 2);
+        printf("\n(1) Main Lagi\t(2) Ke Main Menu\n\n");
+        printf("Pilih : ");
+        scanf("%d", &choice);
 
-            printf("%d\n", player);
-
-            showBoard(MODE_5X5, *boardValue5X5);
-            printf("\n\n");
-            printf("Masukan Posisi : ");
-            scanf("%d", &inputPos);
-
-            if(inputPos > 0 && inputPos <= 25){
-                putInputToBoard(inputPos, *boardValue5X5, MODE_5X5, &player);
-            } else {
-                printf("\nPosisi tidak valid\n");
-                player++ ;
-                Sleep(1000);
-            }
-
-            check = checkWin5x5(boardValue5X5);
+        if(choice < 1 || choice > 2){
+            printf("Inputan tidak valid");
             system("cls");
-
-            if (check == CONTINUE){
-                player--;
-            }
-
-        } while(check == CONTINUE);
-
-        showBoard(MODE_5X5, *boardValue5X5);
-        showWinner(player, check, winner) ;
-
-        getch() ;
-        system("cls");
-    }while(1) ;
-}
-
-void play7X7(int difficulty, int session){
-    int boardValue7X7 [7][7];
-    int inputPos;
-    int check = CONTINUE;
-    int player = X;
-    char winner[10] = {};
-
-    do {
-        initBoardValue(*boardValue7X7, 7);
-
-        do{
-            player = (player % 2);
-
-            showBoard(MODE_7X7, *boardValue7X7);
-            printf("\n\n");
-            printf("Masukan Posisi : ");
-            scanf("%d", &inputPos);
-
-            if(inputPos > 0 && inputPos <= 50){
-                putInputToBoard(inputPos, *boardValue7X7, MODE_7X7, &player);
-            } else {
-                printf("\nPosisi tidak valid\n");
-                player++;
-                Sleep(1000);
-            }
-
-            check = checkWin7x7(boardValue7X7);
+        } else{
             system("cls");
-
-            if (check == CONTINUE)
-                player--;
-
-        } while(check == CONTINUE);
-
-        showBoard(MODE_7X7, *boardValue7X7);
-        showWinner(player, check, winner) ;
-
-        getch() ;
-        system("cls");
-    } while(1);
+            switch(choice){
+                case 1 : play(difficulty, initialSession, mode);
+                    break;
+                case 2 : mainMenu();
+                    break;
+            }
+        }
+    } while(choice < 1 || choice > 2);
 }
 
 int main()
 {
-    int mode;
-    int difficullty;
-    int session;
+    int choice;
+    do{
+        showProgramTitle();
+        printf("(1) Login    (2) Daftar    (3) Exit\n\n");
+        printf("Pilih : ");
+        scanf("%d", &choice);
 
-    chooseMode(&mode);
-    chooseDifficulty(&difficullty);
-    inputAmountOfSession(&session);
+        if(choice < 1 || choice > 3){
+            printf("Inputan tidak valid\n");
+            Sleep(2000);
+            system("cls");
+        } else {
+            system("cls");
+            switch(choice){
+                case 1 : login();
+                    break;
+                case 2 : daftar();
+                    break;
+                case 3 : exit(0);
+                    break;
+           }
+        }
 
-    switch(mode){
-        case 1 :
-            play3X3(difficullty, session);
-        break;
+    }while(choice < 1 || choice > 3);
 
-        case 2 :
-            play5X5(difficullty, session);
-        break;
-
-        case 3 :
-            play7X7(difficullty, session);
-        break;
-    }
+    mainMenu();
 
     return 0;
 }
+
