@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1612336382 source:c:\collegemadeprogram\s1\c\tictactoe\main.c
+1612366841 source:c:\collegemadeprogram\s1\c\tictactoe\main.c
 	<stdio.h>
 	<stdlib.h>
 	<windows.h>
@@ -7,4 +7,7 @@
 	<stdbool.h>
 	<conio.h>
 	<math.h>
+	<pthread.h>
+	<unistd.h>
+	<time.h>
 

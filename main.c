@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <conio.h>
 #include <math.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <time.h>
 
 #define ESC 27
 
@@ -29,11 +32,17 @@ const int BETA = 1000;
 const char* ACCOUNT_FILE = "data_files/account.dat";
 const char* SCORE_FILE = "data_files/score.dat";
 
+bool isTimeout = false;
+int maxTime = 10000;
+int startTime;
+
 void login();
 int main();
+void mainMenu();
 void chooseMode(int *mode);
 void chooseDifficulty(int *difficulty);
 void inputAmountOfSession(int *session);
+void play(int difficulty, int session, int mode);
 
 char activeUname[20] = {};
 
@@ -54,6 +63,25 @@ typedef struct {
     int winHard;
     int totalPoin;
 } Score;
+
+
+void makeOutputWhite(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 15);
+}
+
+void makeOutputRed(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 12);
+}
+
+void makeOutputBlue(){
+    HANDLE hconsole;
+    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hconsole, 9);
+}
 
 void showProgramTitle(){
     printf("====================================\n");
@@ -328,7 +356,6 @@ void writeScore(int difficulty){
     }
 
     if(feof(f)){
-        printf("here");
         Sleep(1000);
         f = fopen(SCORE_FILE, "a+b");
 
@@ -446,24 +473,6 @@ void initBoardValue(int *arr, int maxBox){
             boardIndex++;
         }
     }
-}
-
-void makeOutputWhite(){
-    HANDLE hconsole;
-    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hconsole, 15);
-}
-
-void makeOutputRed(){
-    HANDLE hconsole;
-    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hconsole, 12);
-}
-
-void makeOutputBlue(){
-    HANDLE hconsole;
-    hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hconsole, 9);
 }
 
 void determineOutputColor(char *charRep){
@@ -1159,6 +1168,18 @@ void checkAvailableSpot(int *boardValue, Position *pos, int maxBox, int *count){
     }
 }
 
+void botEasy(int *boardValue, int mode){
+    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    Position availiablePos[maxBox*maxBox];
+    int ukuran = 0;
+    checkAvailableSpot(boardValue, availiablePos, maxBox, &ukuran);
+
+    srand(time(0));
+    int index = rand() % ukuran;
+
+    *((boardValue + availiablePos[index].x*maxBox) + availiablePos[index].y) = O;
+}
+
 void theWinner(int player, char winner[10]){
     if (player == X)
         strcpy(winner, "Player") ;
@@ -1228,8 +1249,7 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
                     bestScore = bestScore < score ? score : bestScore;
                     alpha = alpha > score ? alpha : score;
                     if(beta <= alpha){
-                        //printf("pruned\n");
-                        break;
+                        return alpha;
                     }
                 }
             }
@@ -1249,8 +1269,7 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
                     bestScore = bestScore > score ? score : bestScore;
                     beta = beta < score ? beta : score;
                     if(beta <= alpha){
-                        //printf("pruned\n");
-                        break;
+                        return beta;
                     }
                 }
             }
@@ -1258,40 +1277,6 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
 
         return bestScore;
     }
-}
-
-int negamax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
-    int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
-    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
-
-    if(result != CONTINUE || depth < 1){
-        if(result == WIN)
-            return isBot ? PLAYER_WIN : BOT_WIN;
-
-        else if(result == DRAW || depth < 1)
-            return TIE;
-
-    }
-
-    int bestScore = -1000;
-    for(int i = 0; i < maxBox ; i++ ){
-        for(int j = 0; j < maxBox; j++){
-            if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
-                int lastValue = *((boardValue + i*maxBox) + j);
-                *((boardValue + i*maxBox) + j) = O;
-                int score = -negamax(boardValue, depth -1, alpha, beta, false, mode);
-                *((boardValue + i*maxBox) + j) = lastValue;
-                bestScore = bestScore < score ? score : bestScore;
-                alpha = alpha > score ? alpha : score;
-                if(beta <= alpha){
-                    //printf("pruned\n");
-                    break;
-                }
-            }
-        }
-    }
-
-    return bestScore;
 }
 
 void botHard(int *boardValue, int mode){
@@ -1319,6 +1304,18 @@ void botHard(int *boardValue, int mode){
     *((boardValue + move.x*maxBox) + move.y) = O;
 }
 
+void *threadTimer(){
+    isTimeout = false;
+
+    while(startTime <= maxTime){
+        Sleep(1000);
+        startTime++;
+    }
+    isTimeout = true;
+    startTime = 0;
+    return NULL;
+}
+
 void play(int difficulty, int session, int mode){
     int boardTiles = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     int boardValue [boardTiles][boardTiles];
@@ -1330,8 +1327,9 @@ void play(int difficulty, int session, int mode){
     int playerWinCount = 0;
     int drawCount = 0;
     int initialSession = session;
-    Position availabeSpot[49] = {};
     int choice;
+
+    //maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : mode == MEDIUM ? 3 : 0);
 
     do {
 
@@ -1345,23 +1343,42 @@ void play(int difficulty, int session, int mode){
 
             if(player == O){
                 switch(difficulty){
+                    //easy
+                    case 1 : botEasy(*boardValue, mode);
+                        break;
                     //hard
                     case 3 : botHard(*boardValue, mode);
-                    break;
+                        break;
                 }
             }
 
             else {
                 printf("\n\n");
-                printf("Masukan Posisi : ");
+                printf("Batas waktu untuk menginput adalah %d detik", maxTime);
+                printf("\nMasukan Posisi : ");
+
+                pthread_t timer_thread;
+                startTime = 0;
+                pthread_create(&timer_thread, NULL, threadTimer, NULL);
+
                 scanf("%d", &inputPos);
 
-                if(inputPos > 0 && inputPos <= pow(boardTiles,2)){
-                    putInputToBoard(inputPos, *boardValue, mode, &player);
+                if(isTimeout){
+                    printf("Melebihi batas waktu input");
+                    Sleep(1500);
+                    //if(pthread_kill(timer_thread, 0) == 0)
+                      //  printf("ad");
+                    startTime = 0;
                 } else {
-                    printf("\nPosisi tidak valid\n");
-                    player++;
-                    Sleep(1000);
+                    //pthread_kill(timer_thread, )
+                    startTime = 0;
+                    if(inputPos > 0 && inputPos <= pow(boardTiles,2)){
+                        putInputToBoard(inputPos, *boardValue, mode, &player);
+                    } else {
+                        printf("\nPosisi tidak valid\n");
+                        player++;
+                        Sleep(1000);
+                    }
                 }
             }
 
