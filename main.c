@@ -26,8 +26,8 @@ const int CONTINUE = 0;
 const int BOT_WIN = 10;
 const int PLAYER_WIN = -10;
 const int TIE = 0;
-const int MEDIUM_DEPTH = 4 ;
-const int HARD_DEPTH = 6;
+const int MEDIUM_DEPTH = 2;
+const int HARD_DEPTH = 4;
 const int ALPHA = -1000;
 const int BETA = 1000;
 const char* ACCOUNT_FILE = "data_files/account.dat";
@@ -107,7 +107,7 @@ void daftar(){
     printf("============== Daftar ==============\n\n");
 
     if(fAccount == NULL){
-        fAccount = fopen(ACCOUNT_FILE, "wb");
+        fAccount = fopen(ACCOUNT_FILE, "a+");
         is_open_in_wb = true;
 
         if(fAccount == NULL){
@@ -157,7 +157,7 @@ void daftar(){
         }while(is_uname_taken);
 
         fclose(fAccount);
-        fAccount = fopen(ACCOUNT_FILE, "a+b");
+        fAccount = fopen(ACCOUNT_FILE, "a+");
 
         printf("Masukan password : ");
         scanf(" %[^\n]%*c", acc.password);
@@ -399,6 +399,12 @@ void mainMenu(){
     printf("Pilih : ");
     scanf("%d", &choice);
 
+    if(choice != 1 && choice != 2 && choice != 3){
+        printf("Pilih Mode dengan menginput angka 1, 2, atau 3 !") ;
+        Sleep(2000) ;
+        system("cls") ;
+        mainMenu() ;
+    }
     switch(choice){
         case 1 :
             system("cls");
@@ -428,8 +434,11 @@ void chooseMode(int *mode){
         printf("(1) 3X3       (2) 5X5       (3) 7X7\n\n");
         printf("Pilih Mode : " );
         scanf("%d", mode);
-
-        if(*mode != MODE_3X3 && *mode != MODE_5X5 && *mode != MODE_7X7){
+        if(*mode == 0){
+            system("cls");
+            mainMenu();
+        }
+        else if(*mode != MODE_3X3 && *mode != MODE_5X5 && *mode != MODE_7X7){
             printf("Pilih Mode dengan menginput angka 1, 2, atau 3 !");
             Sleep(1500);
         }
@@ -443,7 +452,11 @@ void chooseDifficulty(int *difficulty){
         printf("(1) Easy     (2) Medium    (3) Hard\n\n");
         printf("Pilih Difficulty : " );
         scanf("%d", difficulty);
-        if (*difficulty!= EASY && *difficulty != MEDIUM && *difficulty != HARD){
+        if(*difficulty == 0){
+            system("cls");
+            mainMenu();
+        }
+        else if (*difficulty!= EASY && *difficulty != MEDIUM && *difficulty != HARD){
             printf("Pilih difficulty dengan menginput angka 1, 2, atau 3 !");
             Sleep(1500);
         }
@@ -1353,6 +1366,7 @@ void play(int difficulty, int session, int mode){
     int drawCount = 0;
     int initialSession = session;
     int choice;
+    int iteration = 1 ;
 
     //maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : mode == MEDIUM ? 3 : 0);
 
@@ -1390,8 +1404,11 @@ void play(int difficulty, int session, int mode){
                 pthread_create(&timer_thread, NULL, threadTimer, NULL);
 
                 scanf("%d", &inputPos);
-
-                if(isTimeout){
+                if(inputPos == 0 && iteration == 1){
+                    system("cls");
+                    mainMenu();
+                }
+                else if(isTimeout){
                     printf("Melebihi batas waktu input");
                     Sleep(1500);
                     //if(pthread_kill(timer_thread, 0) == 0)
@@ -1409,7 +1426,7 @@ void play(int difficulty, int session, int mode){
                     }
                 }
             }
-
+            iteration++ ;
             system("cls");
 
             switch(mode){
