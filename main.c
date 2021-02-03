@@ -26,6 +26,7 @@ const int CONTINUE = 0;
 const int BOT_WIN = 10;
 const int PLAYER_WIN = -10;
 const int TIE = 0;
+const int MEDIUM_DEPTH = 4 ;
 const int HARD_DEPTH = 6;
 const int ALPHA = -1000;
 const int BETA = 1000;
@@ -1168,18 +1169,6 @@ void checkAvailableSpot(int *boardValue, Position *pos, int maxBox, int *count){
     }
 }
 
-void botEasy(int *boardValue, int mode){
-    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
-    Position availiablePos[maxBox*maxBox];
-    int ukuran = 0;
-    checkAvailableSpot(boardValue, availiablePos, maxBox, &ukuran);
-
-    srand(time(0));
-    int index = rand() % ukuran;
-
-    *((boardValue + availiablePos[index].x*maxBox) + availiablePos[index].y) = O;
-}
-
 void theWinner(int player, char winner[10]){
     if (player == X)
         strcpy(winner, "Player") ;
@@ -1278,6 +1267,42 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
         return bestScore;
     }
 }
+void botEasy(int *boardValue, int mode){
+    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    Position availiablePos[maxBox*maxBox];
+    int ukuran = 0;
+    checkAvailableSpot(boardValue, availiablePos, maxBox, &ukuran);
+
+    srand(time(0));
+    int index = rand() % ukuran;
+
+    *((boardValue + availiablePos[index].x*maxBox) + availiablePos[index].y) = O;
+}
+
+void botMedium(int *boardValue, int mode){
+    int bestScore = -1000;
+    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    Position move;
+
+    for(int i = 0; i < maxBox ; i++){
+        for(int j = 0; j < maxBox; j++){
+            if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
+                int lastValue = *((boardValue + i*maxBox) + j);
+                *((boardValue + i*maxBox) + j) = O;
+                int score = minimax(boardValue, MEDIUM_DEPTH, ALPHA, BETA, false, mode);
+                *((boardValue + i*maxBox) + j) = lastValue;
+
+                if(bestScore < score){
+                    bestScore = score;
+                    move.x = i;
+                    move.y = j;
+                }
+            }
+        }
+    }
+
+    *((boardValue + move.x*maxBox) + move.y) = O;
+}
 
 void botHard(int *boardValue, int mode){
     int bestScore = -1000;
@@ -1346,6 +1371,9 @@ void play(int difficulty, int session, int mode){
                     //easy
                     case 1 : botEasy(*boardValue, mode);
                         break;
+                    //medium
+                    case 2 : botMedium(*boardValue, mode);
+                        break ;
                     //hard
                     case 3 : botHard(*boardValue, mode);
                         break;
