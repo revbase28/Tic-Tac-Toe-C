@@ -6,6 +6,8 @@
 #include <conio.h>
 #include <math.h>
 
+#define ESC 27
+
 //Constant
 const int MODE_3X3 = 1;
 const int MODE_5X5 = 2;
@@ -21,7 +23,9 @@ const int CONTINUE = 0;
 const int BOT_WIN = 10;
 const int PLAYER_WIN = -10;
 const int TIE = 0;
-const int HARD_DEPTH = 10;
+const int HARD_DEPTH = 6;
+const int ALPHA = -1000;
+const int BETA = 1000;
 const char* ACCOUNT_FILE = "data_files/account.dat";
 const char* SCORE_FILE = "data_files/score.dat";
 
@@ -88,8 +92,20 @@ void daftar(){
     if(fAccount != NULL){
         do{
             is_uname_taken = false;
-            printf("Masukan username : ");
-            scanf(" %[^\n]%*c", acc.uname);
+            do{
+                printf("Masukan username (Maks 20 karakter) : ");
+                scanf(" %[^\n]%*c", acc.uname);
+
+                if(strlen(acc.uname) > 20){
+                    printf("Jumlah karakter melebihi batas");
+                    Sleep(1500);
+                    memset(acc.uname, 0, sizeof(acc.uname));
+                    system("cls");
+                    showProgramTitle();
+                    printf("============== Daftar ==============\n\n");
+                }
+
+            } while(strlen(acc.uname) == 0);
 
             if(!is_open_in_wb){
                 while(!feof(fAccount)){
@@ -112,7 +128,7 @@ void daftar(){
         }while(is_uname_taken);
 
         fclose(fAccount);
-        fAccount = fopen(ACCOUNT_FILE, "a+");
+        fAccount = fopen(ACCOUNT_FILE, "a+b");
 
         printf("Masukan password : ");
         scanf(" %[^\n]%*c", acc.password);
@@ -199,6 +215,7 @@ void highScore(){
     f = fopen(SCORE_FILE, "rb");
     int i = 1;
     makeOutputWhite();
+    printf("Tekan ESC untuk kembali ke menu utama\n\n");
     printf("======================= Highscore =========================\n");
     printf("===========================================================\n");
     printf(" No   Username\t\tEasy\tMedium\tHard\tTotal Poin\n");
@@ -220,21 +237,68 @@ void highScore(){
     }
 
     fclose(f);
+
+    char ch;
+    do {
+        ch = getch();
+        if(ch == ESC){
+            system("cls");
+            mainMenu();
+        }
+    } while(ch != ESC);
 }
 
 int countTotalPoin(int winEasy, int winMed, int winHard){
     return (winEasy * 3) + (winMed * 5) + (winHard * 7);
 }
 
+void sortScore(){
+    FILE *f = fopen(SCORE_FILE, "r+b");
+    Score buffer1;
+    Score buffer2;
+    int filePos = 0;
+    int i = 1;
+
+    memset(buffer1.uname, 0, sizeof(buffer1.uname));
+    memset(buffer2.uname, 0, sizeof(buffer2.uname));
+
+    fseek(f, filePos*sizeof(buffer1), SEEK_SET);
+    fread(&buffer1, sizeof(buffer1), 1, f);
+    while(!feof(f)){
+        fseek(f, (filePos + i)*sizeof(buffer2), SEEK_SET);
+        fread(&buffer2, sizeof(buffer2), 1, f);
+        if(!feof(f)){
+            if(buffer1.totalPoin < buffer2.totalPoin){
+                fseek(f, filePos*sizeof(buffer1), SEEK_SET);
+                fwrite(&buffer2, sizeof(buffer2), 1, f);
+                fseek(f, (filePos + i)*sizeof(buffer1), SEEK_SET);
+                fwrite(&buffer1, sizeof(buffer1), 1, f);
+            }
+        } else {
+           filePos++;
+           i = 0;
+        }
+        memset(buffer1.uname, 0, sizeof(buffer1.uname));
+        memset(buffer2.uname, 0, sizeof(buffer2.uname));
+
+        fseek(f, filePos*sizeof(buffer1), SEEK_SET);
+        fread(&buffer1, sizeof(buffer1), 1, f);
+        i++;
+    }
+
+    fclose(f);
+
+}
+
 void writeScore(int difficulty){
     FILE *f;
-    f = fopen(SCORE_FILE, "r+");
+    f = fopen(SCORE_FILE, "r+b");
     Score buffer;
     int filePos = 0;
 
     if(f == NULL){
         fclose(f);
-        f = fopen(SCORE_FILE, "w+");
+        f = fopen(SCORE_FILE, "wb+");
     }
 
     memset(buffer.uname, 0, sizeof(buffer.uname));
@@ -264,9 +328,9 @@ void writeScore(int difficulty){
     }
 
     if(feof(f)){
-        Sleep(2000);
-        fclose(f);
-        f = fopen(SCORE_FILE, "a+");
+        printf("here");
+        Sleep(1000);
+        f = fopen(SCORE_FILE, "a+b");
 
         int easy = 0, medium = 0, hard = 0;
         switch(difficulty){
@@ -292,6 +356,8 @@ void writeScore(int difficulty){
     }
 
     fclose(f);
+
+    sortScore();
 }
 
 void mainMenu(){
@@ -1137,7 +1203,7 @@ void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
     printf("                 %d\n", session);
 }
 
-int minimax(int *boardValue, int depth, bool isBot, int mode){
+int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
     int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
 
@@ -1157,9 +1223,14 @@ int minimax(int *boardValue, int depth, bool isBot, int mode){
                 if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                     int lastValue = *((boardValue + i*maxBox) + j);
                     *((boardValue + i*maxBox) + j) = O;
-                    int score = minimax(boardValue, depth -1, false, mode);
+                    int score = minimax(boardValue, depth -1, alpha, beta, false, mode);
                     *((boardValue + i*maxBox) + j) = lastValue;
                     bestScore = bestScore < score ? score : bestScore;
+                    alpha = alpha > score ? alpha : score;
+                    if(beta <= alpha){
+                        //printf("pruned\n");
+                        break;
+                    }
                 }
             }
         }
@@ -1173,15 +1244,54 @@ int minimax(int *boardValue, int depth, bool isBot, int mode){
                 if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                     int lastValue = *((boardValue + i*maxBox) + j);
                     *((boardValue + i*maxBox) + j) = X;
-                    int score = minimax(boardValue, depth -1, true, mode);
+                    int score = minimax(boardValue, depth -1, alpha, beta, true, mode);
                     *((boardValue + i*maxBox) + j) = lastValue;
                     bestScore = bestScore > score ? score : bestScore;
+                    beta = beta < score ? beta : score;
+                    if(beta <= alpha){
+                        //printf("pruned\n");
+                        break;
+                    }
                 }
             }
         }
 
         return bestScore;
     }
+}
+
+int negamax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
+    int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
+    int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+
+    if(result != CONTINUE || depth < 1){
+        if(result == WIN)
+            return isBot ? PLAYER_WIN : BOT_WIN;
+
+        else if(result == DRAW || depth < 1)
+            return TIE;
+
+    }
+
+    int bestScore = -1000;
+    for(int i = 0; i < maxBox ; i++ ){
+        for(int j = 0; j < maxBox; j++){
+            if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
+                int lastValue = *((boardValue + i*maxBox) + j);
+                *((boardValue + i*maxBox) + j) = O;
+                int score = -negamax(boardValue, depth -1, alpha, beta, false, mode);
+                *((boardValue + i*maxBox) + j) = lastValue;
+                bestScore = bestScore < score ? score : bestScore;
+                alpha = alpha > score ? alpha : score;
+                if(beta <= alpha){
+                    //printf("pruned\n");
+                    break;
+                }
+            }
+        }
+    }
+
+    return bestScore;
 }
 
 void botHard(int *boardValue, int mode){
@@ -1194,7 +1304,7 @@ void botHard(int *boardValue, int mode){
             if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                 int lastValue = *((boardValue + i*maxBox) + j);
                 *((boardValue + i*maxBox) + j) = O;
-                int score = minimax(boardValue, HARD_DEPTH, false, mode);
+                int score = minimax(boardValue, HARD_DEPTH, ALPHA, BETA, false, mode);
                 *((boardValue + i*maxBox) + j) = lastValue;
 
                 if(bestScore < score){
