@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <conio.h>
 #include <math.h>
-#include <pthread.h>
+// #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
 
@@ -1399,9 +1399,9 @@ void play(int difficulty, int session, int mode){
                 printf("Batas waktu untuk menginput adalah %d detik", maxTime);
                 printf("\nMasukan Posisi : ");
 
-                pthread_t timer_thread;
-                startTime = 0;
-                pthread_create(&timer_thread, NULL, threadTimer, NULL);
+                // pthread_t timer_thread;
+                // startTime = 0;
+                // pthread_create(&timer_thread, NULL, threadTimer, NULL);
 
                 scanf("%d", &inputPos);
                 if(inputPos == 0 && iteration == 1){
