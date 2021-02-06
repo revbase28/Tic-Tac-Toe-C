@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <conio.h>
 #include <math.h>
-// #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
 
@@ -32,10 +31,6 @@ const int ALPHA = -1000;
 const int BETA = 1000;
 const char* ACCOUNT_FILE = "data_files/account.dat";
 const char* SCORE_FILE = "data_files/score.dat";
-
-bool isTimeout = false;
-int maxTime = 10000;
-int startTime;
 
 void login();
 int main();
@@ -1342,18 +1337,6 @@ void botHard(int *boardValue, int mode){
     *((boardValue + move.x*maxBox) + move.y) = O;
 }
 
-void *threadTimer(){
-    isTimeout = false;
-
-    while(startTime <= maxTime){
-        Sleep(1000);
-        startTime++;
-    }
-    isTimeout = true;
-    startTime = 0;
-    return NULL;
-}
-
 void play(int difficulty, int session, int mode){
     int boardTiles = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     int boardValue [boardTiles][boardTiles];
@@ -1368,7 +1351,7 @@ void play(int difficulty, int session, int mode){
     int choice;
     int iteration = 1 ;
 
-    //maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : mode == MEDIUM ? 3 : 0);
+    int maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : difficulty == MEDIUM ? 3 : 0);
 
     do {
 
@@ -1399,24 +1382,18 @@ void play(int difficulty, int session, int mode){
                 printf("Batas waktu untuk menginput adalah %d detik", maxTime);
                 printf("\nMasukan Posisi : ");
 
-                // pthread_t timer_thread;
-                // startTime = 0;
-                // pthread_create(&timer_thread, NULL, threadTimer, NULL);
-
+                int start_t = clock() ;
                 scanf("%d", &inputPos);
+                int end_t = clock() ;
+
                 if(inputPos == 0 && iteration == 1){
                     system("cls");
                     mainMenu();
                 }
-                else if(isTimeout){
+                else if((end_t-start_t) > maxTime*1000){
                     printf("Melebihi batas waktu input");
                     Sleep(1500);
-                    //if(pthread_kill(timer_thread, 0) == 0)
-                      //  printf("ad");
-                    startTime = 0;
                 } else {
-                    //pthread_kill(timer_thread, )
-                    startTime = 0;
                     if(inputPos > 0 && inputPos <= pow(boardTiles,2)){
                         putInputToBoard(inputPos, *boardValue, mode, &player);
                     } else {
