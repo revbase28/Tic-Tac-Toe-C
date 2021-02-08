@@ -26,7 +26,7 @@ const int CONTINUE = 0;
 const int BOT_WIN = 10;
 const int PLAYER_WIN = -10;
 const int TIE = 0;
-const int MEDIUM_DEPTH = 4 ;
+const int MEDIUM_DEPTH = 3;
 const int HARD_DEPTH = 6;
 const int ALPHA = -1000;
 const int BETA = 1000;
@@ -178,7 +178,7 @@ void daftar(){
 
 void login(){
     FILE *fAccount;
-    fAccount = fopen(ACCOUNT_FILE, "r");
+    fAccount = fopen(ACCOUNT_FILE, "rb");
     Account buffer;
     char uname[20] = {};
     char pass[20] = {};
@@ -236,6 +236,12 @@ void login(){
 
     system("cls");
     fclose(fAccount);
+}
+
+void logout(){
+    memset(activeUname, 0, sizeof(activeUname));
+    system("cls");
+    main();
 }
 
 void highScore(){
@@ -415,9 +421,7 @@ void mainMenu(){
             break;
 
         case 3 :
-            memset(activeUname, 0, sizeof(activeUname));
-            system("cls");
-            main();
+            logout();
         break;
     }
 }
@@ -1216,10 +1220,11 @@ void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
 int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
     int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
+    int moveScore = pow(maxBox,2) + 1;
 
     if(result != CONTINUE || depth < 1){
         if(result == WIN)
-            return isBot ? PLAYER_WIN : BOT_WIN;
+            return isBot ? -moveScore : moveScore;
 
         else if(result == DRAW || depth < 1)
             return TIE;
@@ -1267,6 +1272,7 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
         return bestScore;
     }
 }
+
 void botEasy(int *boardValue, int mode){
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     Position availiablePos[maxBox*maxBox];
@@ -1329,12 +1335,12 @@ void botHard(int *boardValue, int mode){
     *((boardValue + move.x*maxBox) + move.y) = O;
 }
 
-void *threadTimer(){
+void *threadTimer(void* player){
     isTimeout = false;
 
-    while(startTime <= maxTime){
+    while(1){
         Sleep(1000);
-        startTime++;
+
     }
     isTimeout = true;
     startTime = 0;
@@ -1354,7 +1360,7 @@ void play(int difficulty, int session, int mode){
     int initialSession = session;
     int choice;
 
-    //maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : mode == MEDIUM ? 3 : 0);
+    maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : difficulty == MEDIUM ? 3 : 0);
 
     do {
 
@@ -1385,21 +1391,14 @@ void play(int difficulty, int session, int mode){
                 printf("Batas waktu untuk menginput adalah %d detik", maxTime);
                 printf("\nMasukan Posisi : ");
 
-                pthread_t timer_thread;
-                startTime = 0;
-                pthread_create(&timer_thread, NULL, threadTimer, NULL);
-
+                int start = clock();
                 scanf("%d", &inputPos);
+                int end = clock();
 
-                if(isTimeout){
+                if((end - start) > (maxTime * 1000) ){
                     printf("Melebihi batas waktu input");
                     Sleep(1500);
-                    //if(pthread_kill(timer_thread, 0) == 0)
-                      //  printf("ad");
-                    startTime = 0;
                 } else {
-                    //pthread_kill(timer_thread, )
-                    startTime = 0;
                     if(inputPos > 0 && inputPos <= pow(boardTiles,2)){
                         putInputToBoard(inputPos, *boardValue, mode, &player);
                     } else {
@@ -1427,7 +1426,6 @@ void play(int difficulty, int session, int mode){
                 case 3 :
                     check = checkWin7x7(boardValue) ;
                 break;
-
 
             }
 
