@@ -27,7 +27,7 @@ const int BOT_WIN = 10;
 const int PLAYER_WIN = -10;
 const int TIE = 0;
 const int MEDIUM_DEPTH = 3;
-const int HARD_DEPTH = 6;
+const int HARD_DEPTH = 5;
 const int ALPHA = -1000;
 const int BETA = 1000;
 const char* ACCOUNT_FILE = "data_files/account.dat";
@@ -1314,13 +1314,28 @@ void botHard(int *boardValue, int mode){
     int bestScore = -1000;
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     Position move;
+    int depth = HARD_DEPTH;
+
+    /* Khusus untuk mode 7x7 dalam penelusuran disesuaikan dengan jumlah posisi yang kosong
+       Di awal awal permainan dalam penelusuran hanya sedalam 2 langkah kedepan
+       Penelusuran sedalam HARD_DEPTH baru akan dilakukan saat posisi yang kosong berjumlah 25 ke bawah
+       Penelusuran sedalam MEDIUM_DEPTH baru akan dilakukan saat posisi yang kosong berjumlah 41 ke bawah
+       Hal ini dilakukan untuk mempercepat algoritma minimax di mode 7x7 Hard */
+
+    if(mode == MODE_7X7){
+        Position availiablePos[maxBox*maxBox];
+        int emptyPosCount = 0;
+        checkAvailableSpot(boardValue, availiablePos, maxBox, &emptyPosCount);
+
+        depth = (emptyPosCount < 26) ? HARD_DEPTH : (emptyPosCount < 42) ? MEDIUM_DEPTH : 2;
+    }
 
     for(int i = 0; i < maxBox ; i++){
         for(int j = 0; j < maxBox; j++){
             if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ){
                 int lastValue = *((boardValue + i*maxBox) + j);
                 *((boardValue + i*maxBox) + j) = O;
-                int score = minimax(boardValue, HARD_DEPTH, ALPHA, BETA, false, mode);
+                int score = minimax(boardValue, depth, ALPHA, BETA, false, mode);
                 *((boardValue + i*maxBox) + j) = lastValue;
 
                 if(bestScore < score){
