@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <conio.h>
 #include <math.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <time.h>
 
@@ -32,10 +31,6 @@ const int ALPHA = -1000;
 const int BETA = 1000;
 const char* ACCOUNT_FILE = "data_files/account.dat";
 const char* SCORE_FILE = "data_files/score.dat";
-
-bool isTimeout = false;
-int maxTime = 10000;
-int startTime;
 
 void login();
 int main();
@@ -107,7 +102,7 @@ void daftar(){
     printf("============== Daftar ==============\n\n");
 
     if(fAccount == NULL){
-        fAccount = fopen(ACCOUNT_FILE, "wb");
+        fAccount = fopen(ACCOUNT_FILE, "a+");
         is_open_in_wb = true;
 
         if(fAccount == NULL){
@@ -157,7 +152,7 @@ void daftar(){
         }while(is_uname_taken);
 
         fclose(fAccount);
-        fAccount = fopen(ACCOUNT_FILE, "a+b");
+        fAccount = fopen(ACCOUNT_FILE, "a+");
 
         printf("Masukan password : ");
         scanf(" %[^\n]%*c", acc.password);
@@ -405,6 +400,12 @@ void mainMenu(){
     printf("Pilih : ");
     scanf("%d", &choice);
 
+    if(choice != 1 && choice != 2 && choice != 3){
+        printf("Pilih Mode dengan menginput angka 1, 2, atau 3 !") ;
+        Sleep(2000) ;
+        system("cls") ;
+        mainMenu() ;
+    }
     switch(choice){
         case 1 :
             system("cls");
@@ -432,8 +433,11 @@ void chooseMode(int *mode){
         printf("(1) 3X3       (2) 5X5       (3) 7X7\n\n");
         printf("Pilih Mode : " );
         scanf("%d", mode);
-
-        if(*mode != MODE_3X3 && *mode != MODE_5X5 && *mode != MODE_7X7){
+        if(*mode == 0){
+            system("cls");
+            mainMenu();
+        }
+        else if(*mode != MODE_3X3 && *mode != MODE_5X5 && *mode != MODE_7X7){
             printf("Pilih Mode dengan menginput angka 1, 2, atau 3 !");
             Sleep(1500);
         }
@@ -447,7 +451,11 @@ void chooseDifficulty(int *difficulty){
         printf("(1) Easy     (2) Medium    (3) Hard\n\n");
         printf("Pilih Difficulty : " );
         scanf("%d", difficulty);
-        if (*difficulty!= EASY && *difficulty != MEDIUM && *difficulty != HARD){
+        if(*difficulty == 0){
+            system("cls");
+            mainMenu();
+        }
+        else if (*difficulty!= EASY && *difficulty != MEDIUM && *difficulty != HARD){
             printf("Pilih difficulty dengan menginput angka 1, 2, atau 3 !");
             Sleep(1500);
         }
@@ -1350,18 +1358,6 @@ void botHard(int *boardValue, int mode){
     *((boardValue + move.x*maxBox) + move.y) = O;
 }
 
-void *threadTimer(void* player){
-    isTimeout = false;
-
-    while(1){
-        Sleep(1000);
-
-    }
-    isTimeout = true;
-    startTime = 0;
-    return NULL;
-}
-
 void play(int difficulty, int session, int mode){
     int boardTiles = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     int boardValue [boardTiles][boardTiles];
@@ -1374,8 +1370,8 @@ void play(int difficulty, int session, int mode){
     int drawCount = 0;
     int initialSession = session;
     int choice;
-
-    maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : difficulty == MEDIUM ? 3 : 0);
+    int iteration = 1 ;
+    int maxTime = 0 + (mode == MODE_3X3 ? 10 : mode == MODE_5X5 ? 12 : 15) + (difficulty == EASY ? 5 : difficulty == MEDIUM ? 3 : 0);
 
     do {
 
@@ -1406,11 +1402,15 @@ void play(int difficulty, int session, int mode){
                 printf("Batas waktu untuk menginput adalah %d detik", maxTime);
                 printf("\nMasukan Posisi : ");
 
-                int start = clock();
+                int start_t = clock() ;
                 scanf("%d", &inputPos);
-                int end = clock();
+                int end_t = clock() ;
 
-                if((end - start) > (maxTime * 1000) ){
+                if(inputPos == 0 && iteration == 1){
+                    system("cls");
+                    mainMenu();
+                }
+                else if((end_t-start_t) > maxTime*1000){
                     printf("Melebihi batas waktu input");
                     Sleep(1500);
                 } else {
@@ -1423,7 +1423,7 @@ void play(int difficulty, int session, int mode){
                     }
                 }
             }
-
+            iteration++ ;
             system("cls");
 
             switch(mode){
