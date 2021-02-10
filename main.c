@@ -244,23 +244,33 @@ void highScore(){
     Score highScore;
     f = fopen(SCORE_FILE, "rb");
     int i = 1;
+    bool isUnameDisplayed = false;
+
     makeOutputWhite();
     printf("Tekan ESC untuk kembali ke menu utama\n\n");
-    printf("======================= Highscore =========================\n");
-    printf("===========================================================\n");
-    printf(" No   Username\t\tEasy\tMedium\tHard\tTotal Poin\n");
-    printf("===========================================================\n");
+    printf("======================= Highscore ===========================\n");
+    printf("=============================================================\n");
+    printf(" %-4s %-20s %-3s    %-3s  %-3s    %-9s", "Rank", "Username", "Easy", "Medium", "Hard", "Total Poin\n");
+    printf("=============================================================\n");
     if(f!= NULL){
         memset(highScore.uname, 0, sizeof(highScore.uname));
         fread(&highScore, sizeof(highScore), 1, f);
         while(!feof(f)){
-            if(strcmp(highScore.uname, activeUname) == 0)
+            if(strcmp(highScore.uname, activeUname) == 0){
                 makeOutputBlue();
-            printf(" %d    %s\t\t%d\t%d\t%d\t%d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
+                isUnameDisplayed = true;
+            }
+            if(i <= 5 || strcmp(highScore.uname, activeUname) == 0)
+                printf(" %-4d %-20s %-6d  %-6d  %-6d  %-9d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
+
             makeOutputWhite();
             memset(highScore.uname, 0, sizeof(highScore.uname));
             fread(&highScore, sizeof(highScore), 1, f);
             i++;
+
+            if(i > 5 && isUnameDisplayed)
+                break;
+
         }
     } else {
         printf("Belum ada highscore");
