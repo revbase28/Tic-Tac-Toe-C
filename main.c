@@ -1298,7 +1298,7 @@ void botEasy(int *boardValue, int mode){
     checkAvailableSpot(boardValue, availiablePos, maxBox, &ukuran);
 
     srand(time(0));
-    int index = rand() % ukuran;
+    int index = rand() % ukuran + 1;
 
     *((boardValue + availiablePos[index].x*maxBox) + availiablePos[index].y) = O;
 }
