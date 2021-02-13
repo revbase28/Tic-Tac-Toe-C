@@ -1483,7 +1483,8 @@ void play(int difficulty, int session, int mode){
 
         if(choice < 1 || choice > 2){
             printf("Inputan tidak valid");
-            system("cls");
+            Sleep(1000) ;
+            system("cls") ;
         } else{
             system("cls");
             switch(choice){
