@@ -247,22 +247,33 @@ void highScore(){
     bool isUnameDisplayed = false;
 
     makeOutputWhite();
-    printf("Tekan ESC untuk kembali ke menu utama\n\n");
-    printf("======================= Highscore ===========================\n");
-    printf("=============================================================\n");
-    printf(" %-4s %-20s %-3s    %-3s  %-3s    %-9s", "Rank", "Username", "Easy", "Medium", "Hard", "Total Poin\n");
-    printf("=============================================================\n");
+    printf("Tekan ESC untuk kembali ke menu utama\n");
+    printf("\xDA\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\n") ;
+    printf("\xB3>>>>>>>>>>>>>>>>>>>>>> Highscore <<<<<<<<<<<<<<<<<<<<<<<<<<<\xB3\n");
+    printf("\xC3\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xB4\n") ;
+    printf("\xB3%-4s %-20s %-3s    %-3s  %-3s    %-9s\xB3\n", "Rank", "Username", "Easy", "Medium", "Hard", "Total Poin");
+    printf("\xC3\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xB4\n") ;
     if(f!= NULL){
         memset(highScore.uname, 0, sizeof(highScore.uname));
         fread(&highScore, sizeof(highScore), 1, f);
         while(!feof(f)){
             if(strcmp(highScore.uname, activeUname) == 0){
+                printf("\xB3") ;
                 makeOutputBlue();
                 isUnameDisplayed = true;
             }
-            if(i <= 5 || strcmp(highScore.uname, activeUname) == 0)
-                printf(" %-4d %-20s %-6d  %-6d  %-6d  %-9d\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
-
+            if(i <= 5 || strcmp(highScore.uname, activeUname) == 0){
+                if (strcmp(highScore.uname, activeUname) == 0){
+                    printf("%-4d %-20s %-6d  %-6d  %-6d  %-10d", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
+                }
+                else{
+                    printf("\xB3%-4d %-20s %-6d  %-6d  %-6d  %-10d\xB3\n", i, highScore.uname, highScore.winEasy, highScore.winMed, highScore.winHard, highScore.totalPoin);
+                }
+            }
+            if(strcmp(highScore.uname, activeUname) == 0){
+                makeOutputWhite() ;
+                printf("\xB3\n") ;
+            }
             makeOutputWhite();
             memset(highScore.uname, 0, sizeof(highScore.uname));
             fread(&highScore, sizeof(highScore), 1, f);
@@ -275,6 +286,7 @@ void highScore(){
     } else {
         printf("Belum ada highscore");
     }
+    printf("\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\n") ;
 
     fclose(f);
 
