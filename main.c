@@ -62,24 +62,44 @@ typedef struct {
 
 
 void makeOutputWhite(){
+    /*
+        Deskripsi: merubah warna output menjadi putih
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     HANDLE hconsole;
     hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hconsole, 15);
 }
 
 void makeOutputRed(){
+    /*
+        Deskripsi: merubah warna output menjadi merah
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     HANDLE hconsole;
     hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hconsole, 12);
 }
 
 void makeOutputBlue(){
+    /*
+        Deskripsi: merubah warna output menjadi biru
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     HANDLE hconsole;
     hconsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hconsole, 9);
 }
 
 void showProgramTitle(){
+    /*
+        Deskripsi: menampilkan header judul aplikasi
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     printf("====================================\n");
     printf("             TIC TAC TOE\n");
     printf("====================================\n\n");
@@ -90,6 +110,11 @@ void showProgramTitle(){
 }
 
 void daftar(){
+    /*
+        Deskripsi: mendaftarkan username dan password baru ke file account.dat
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     FILE *fAccount;
     fAccount = fopen(ACCOUNT_FILE, "rb");
     Account acc,buffer;
@@ -172,6 +197,11 @@ void daftar(){
 }
 
 void login(){
+    /*
+        Deskripsi: Login user terdaftar
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     FILE *fAccount;
     fAccount = fopen(ACCOUNT_FILE, "rb");
     Account buffer;
@@ -234,12 +264,22 @@ void login(){
 }
 
 void logout(){
+    /*
+        Deskripsi: Logout dari menu utama, reset active uname
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     memset(activeUname, 0, sizeof(activeUname));
     system("cls");
     main();
 }
 
 void highScore(){
+    /*
+        Deskripsi: Menampilkan papan highscore
+        Author   : Muhammad Rasyid Fadlurrahman dan Reihan Reinaldi Suryaman
+    */
+
     FILE *f;
     Score highScore;
     f = fopen(SCORE_FILE, "rb");
@@ -301,10 +341,18 @@ void highScore(){
 }
 
 int countTotalPoin(int winEasy, int winMed, int winHard){
+    /*
+        Deskripsi: Menghitung Total Poin
+        Author   : Reihan Reinaldi Suryaman
+    */
     return (winEasy * 3) + (winMed * 5) + (winHard * 7);
 }
 
 void sortScore(){
+    /*
+        Deskripsi: Mengurutkan file score.dat berdasarkan total poin descending
+        Author   : Reihan Reinaldi Suryaman
+    */
     FILE *f = fopen(SCORE_FILE, "r+b");
     Score buffer1;
     Score buffer2;
@@ -343,6 +391,10 @@ void sortScore(){
 }
 
 void writeScore(int difficulty){
+    /*
+        Deskripsi: Update score.dat atau menambah record baru
+        Author   : Reihan Reinaldi Suryaman
+    */
     FILE *f;
     f = fopen(SCORE_FILE, "r+b");
     Score buffer;
@@ -412,6 +464,10 @@ void writeScore(int difficulty){
 }
 
 void mainMenu(){
+    /*
+        Deskripsi: Menu Utama
+        Author   : Reihan Reinaldi Suryaman
+    */
     int choice;
     int mode;
     int difficullty;
@@ -450,6 +506,10 @@ void mainMenu(){
 }
 
 void chooseMode(int *mode){
+    /*
+        Deskripsi: Tampilan memilih mode permainan
+        Author   : Reihan Reinaldi Suryaman
+    */
     do{
         showProgramTitle();
         printf("(1) 3X3       (2) 5X5       (3) 7X7\n\n");
@@ -468,6 +528,10 @@ void chooseMode(int *mode){
 }
 
 void chooseDifficulty(int *difficulty){
+    /*
+        Deskripsi: Tampilan papan saat memilih tingkat kesulitan
+        Author   : Reihan Reinaldi Suryaman
+    */
     do{
         showProgramTitle();
         printf("(1) Easy     (2) Medium    (3) Hard\n\n");
@@ -487,6 +551,10 @@ void chooseDifficulty(int *difficulty){
 }
 
 void inputAmountOfSession(int *session){
+    /*
+        Deskripsi: Input banyak babak
+        Author   : Reihan Reinaldi Suryaman
+    */
     do{
         showProgramTitle();
         printf("Ingin berapa kali main (maks 9) : " );
@@ -501,6 +569,10 @@ void inputAmountOfSession(int *session){
 }
 
 void initBoardValue(int *arr, int maxBox){
+    /*
+        Deskripsi: Inisialisasi nilai awal papan permainan
+        Author   : Reihan Reinaldi Suryaman
+    */
     int boardIndex = 1;
     for(int i = 0; i < maxBox; i++){
         for(int j = 0; j < maxBox ; j++){
@@ -511,7 +583,10 @@ void initBoardValue(int *arr, int maxBox){
 }
 
 void determineOutputColor(char *charRep){
-
+    /*
+        Deskripsi: Menentukan warna output
+        Author   : Reihan Reinaldi Suryaman
+    */
     if(strcmp(charRep,"O") == 0 || strcmp(charRep," O") == 0){
         makeOutputRed();
     } else if(strcmp(charRep,"X") == 0 || strcmp(charRep," X") == 0){
@@ -527,6 +602,10 @@ void determineOutputColor(char *charRep){
 }
 
 void showBoard(int mode, int *boardValue){
+    /*
+        Deskripsi: Menampilkan papan permainan
+        Author   : Reihan Reinaldi Suryaman
+    */
     char charRepValue [mode == 1 ? 3*3 : mode == 2 ? 5*5 : 7*7][3];
     int counter = 0;
     int start;
@@ -822,7 +901,7 @@ void showBoard(int mode, int *boardValue){
 }
 
 void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
-    /* 
+    /*
         Deskripsi: Memasukan tanda ke papan
         Author   : Reihan Reinaldi Suryaman
     */
@@ -888,8 +967,8 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
 }
 
 int checkWin3x3(int Board[3][3]){
-    /* 
-        Deskripsi: memerika menang/draw/lanjut permainan pada mode 3x3 
+    /*
+        Deskripsi: memerika menang/draw/lanjut permainan pada mode 3x3
         Author   : Muhammad Rasyid Fadlurrahman
     */
     //Check Horizontal
@@ -907,7 +986,7 @@ int checkWin3x3(int Board[3][3]){
         return WIN ;
     else if ((Board[0][2]==Board[1][2]) && (Board[1][2]==Board[2][2]))
         return WIN ;
-    
+
     //Check Diagonal
     else if ((Board[0][0]==Board[1][1]) && (Board[1][1]==Board[2][2]))
         return WIN ;
@@ -924,7 +1003,7 @@ int checkWin3x3(int Board[3][3]){
 }
 
 int checkWin5x5(int board[5][5]){
-    /* 
+    /*
         Deskripsi: memerika menang/draw/lanjut permainan pada mode 5x5
         Author   : Muhammad Rasyid Fadlurrahman
     */
@@ -1070,11 +1149,11 @@ int checkWin5x5(int board[5][5]){
 }
 
 int checkWin7x7(int board[7][7]){
-    /* 
+    /*
         Deskripsi: memerika menang/draw/lanjut permainan pada mode 7x7
         Author   : Reihan Reinaldi Suryaman
     */
-    
+
     int sameCount = 1;
     int countBlank = 0;
     int checkedChar;
@@ -1216,7 +1295,7 @@ int checkWin7x7(int board[7][7]){
 }
 
 void checkAvailableSpot(int *boardValue, Position *pos, int maxBox, int *count){
-    /* 
+    /*
         Deskripsi: memerika bolk tersedia pada papan
         Author   : Reihan Reinaldi Suryaman
     */
@@ -1225,7 +1304,7 @@ void checkAvailableSpot(int *boardValue, Position *pos, int maxBox, int *count){
         for(int j = 0 ; j < maxBox ; j++){
             if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ) {
                 pos[*count].x = i;
-                pos[*count].y = j; 
+                pos[*count].y = j;
                 (*count)++; //menghitung berapa banyak blok kosong yang tersedia
             }
         }
@@ -1233,7 +1312,7 @@ void checkAvailableSpot(int *boardValue, Position *pos, int maxBox, int *count){
 }
 
 void theWinner(int player, char winner[10]){
-    /* 
+    /*
         Deskripsi: memasukan pemenang ke winner
         Author   : Muhammad Rasyid Fadlurrahman & Reihan Reinaldi Suryaman
     */
@@ -1245,7 +1324,7 @@ void theWinner(int player, char winner[10]){
 }
 
 void showWinner(int player, int check, char winner[10]){
-    /* 
+    /*
         Deskripsi: menampilkan pemenang 1 babak
         Author   : Muhammad Rasyid Fadlurrahman
     */
@@ -1259,7 +1338,7 @@ void showWinner(int player, int check, char winner[10]){
 }
 
 void showGameWinner(int playerCount, int botCount){
-    /* 
+    /*
         Deskripsi: menampilkan pemenang 1 game
         Author   : Reihan Reinaldi Suryaman
     */
@@ -1267,7 +1346,7 @@ void showGameWinner(int playerCount, int botCount){
 }
 
 void setWinOrDrawCount(int player, int check, int *botCount, int *playerCount, int *drawCount){
-    /* 
+    /*
         Deskripsi: menampilkan jumlah menang/seri dalam 1 game
         Author   : Reihan Reinaldi Suryaman
     */
@@ -1282,7 +1361,7 @@ void setWinOrDrawCount(int player, int check, int *botCount, int *playerCount, i
 }
 
 void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
-    /* 
+    /*
         Deskripsi: papan skor
         Author   : Reihan Reinaldi Suryaman
     */
@@ -1299,7 +1378,7 @@ void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
 }
 
 int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
-    /* 
+    /*
         Deskripsi: menentukan skor pergerakan bot yang nantinya akan dipakai pada modul bot, apabila giliran bot maka akan dikirim nilai tertinggi dan apabila player maka akan dikirim nilai tererndah
         Author   : Reihan Reinaldi Suryaman
     */
@@ -1360,7 +1439,7 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
 }
 
 void botEasy(int *boardValue, int mode){
-    /* 
+    /*
         Deskripsi: menentukan pergerakan bot secara random
         Author   : Muhammad Rasyid Fadlurrrahman
     */
@@ -1377,7 +1456,7 @@ void botEasy(int *boardValue, int mode){
 }
 
 void botMedium(int *boardValue, int mode){
-    /* 
+    /*
         Deskripsi: menentukan pergerakan bot dengan integrasi modul minimax untuk nilai pergerakan bot dengan kedalaman 3
         Author   : Muhammad Rasyid Fadlurrrahman
     */
@@ -1407,7 +1486,7 @@ void botMedium(int *boardValue, int mode){
 }
 
 void botHard(int *boardValue, int mode){
-    /* 
+    /*
         Deskripsi: menentukan pergerakan bot dengan integrasi modul minimax untuk nilai pergerakan bot dengan kedalaman 5
         Author   : Reihan reinaldi Suryaman
     */
@@ -1452,7 +1531,7 @@ void botHard(int *boardValue, int mode){
 }
 
 void play(int difficulty, int session, int mode){
-    /* 
+    /*
         Deskripsi: modul berjalannya game setelah login
         Author   : Muhammad Rasyid Fadlurrrahman & Reihan Reinaldi Suryaman
     */
@@ -1585,7 +1664,7 @@ void play(int difficulty, int session, int mode){
 }
 
 int main(){
-    /* 
+    /*
         Deskripsi: modul utama yang bekerja sebagai tampilan awal pada game
         Author   : Reihan Reinaldi Suryaman
     */
