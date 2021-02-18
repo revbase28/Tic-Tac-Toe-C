@@ -822,6 +822,11 @@ void showBoard(int mode, int *boardValue){
 }
 
 void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
+    /* 
+        Deskripsi: Memasukan tanda ke papan
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     Position pos;
     switch(mode){
         //Mode 3X3
@@ -883,33 +888,47 @@ void putInputToBoard(int inputPos, int *boardValue, int mode, int *player){
 }
 
 int checkWin3x3(int Board[3][3]){
+    /* 
+        Deskripsi: memerika menang/draw/lanjut permainan pada mode 3x3 
+        Author   : Muhammad Rasyid Fadlurrahman
+    */
+    //Check Horizontal
     if ((Board[0][0]==Board[0][1]) && (Board[0][1]==Board[0][2]))
         return WIN ;
     else if ((Board[1][0]==Board[1][1]) && (Board[1][1]==Board[1][2]))
         return WIN ;
     else if ((Board[2][0]==Board[2][1]) && (Board[2][1]==Board[2][2]))
         return WIN ;
+
+    //Check Vertikal
     else if ((Board[0][0]==Board[1][0]) && (Board[1][0]==Board[2][0]))
         return WIN ;
     else if ((Board[0][1]==Board[1][1]) && (Board[1][1]==Board[2][1]))
         return WIN ;
     else if ((Board[0][2]==Board[1][2]) && (Board[1][2]==Board[2][2]))
         return WIN ;
+    
+    //Check Diagonal
     else if ((Board[0][0]==Board[1][1]) && (Board[1][1]==Board[2][2]))
         return WIN ;
     else if ((Board[0][2]==Board[1][1]) && (Board[1][1]==Board[2][0]))
         return WIN ;
 
+    //check Draw
     else if (Board[0][0] != 1 && Board[0][1] != 2 && Board[0][2] != 3 &&  //check if all value in the board isn't the initial value
             Board[1][0] != 4 && Board[1][1] != 5 && Board[1][2] != 6 &&  //and nobody win then draw
             Board[2][0] != 7 && Board[2][1] != 8 && Board[2][2] != 9)
             return DRAW ;
-
     else
         return CONTINUE;
 }
 
 int checkWin5x5(int board[5][5]){
+    /* 
+        Deskripsi: memerika menang/draw/lanjut permainan pada mode 5x5
+        Author   : Muhammad Rasyid Fadlurrahman
+    */
+
     int sameCount = 1;
     int countBlank = 0;
     int checkedChar;
@@ -1051,6 +1070,11 @@ int checkWin5x5(int board[5][5]){
 }
 
 int checkWin7x7(int board[7][7]){
+    /* 
+        Deskripsi: memerika menang/draw/lanjut permainan pada mode 7x7
+        Author   : Reihan Reinaldi Suryaman
+    */
+    
     int sameCount = 1;
     int countBlank = 0;
     int checkedChar;
@@ -1192,39 +1216,61 @@ int checkWin7x7(int board[7][7]){
 }
 
 void checkAvailableSpot(int *boardValue, Position *pos, int maxBox, int *count){
+    /* 
+        Deskripsi: memerika bolk tersedia pada papan
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     for(int i = 0; i < maxBox ; i++){
         for(int j = 0 ; j < maxBox ; j++){
             if (*((boardValue + i*maxBox) + j) != X && *((boardValue + i*maxBox) + j) != O ) {
                 pos[*count].x = i;
-                pos[*count].y = j;
-                (*count)++;
+                pos[*count].y = j; 
+                (*count)++; //menghitung berapa banyak blok kosong yang tersedia
             }
         }
     }
 }
 
 void theWinner(int player, char winner[10]){
+    /* 
+        Deskripsi: memasukan pemenang ke winner
+        Author   : Muhammad Rasyid Fadlurrahman & Reihan Reinaldi Suryaman
+    */
+
     if (player == X)
-        strcpy(winner, "Player") ;
+        strcpy(winner, "Player") ; //bila pememang player
     else if (player == O)
-        strcpy(winner, "Bot") ;
+        strcpy(winner, "Bot") ; //bila pememang bot
 }
 
 void showWinner(int player, int check, char winner[10]){
+    /* 
+        Deskripsi: menampilkan pemenang 1 babak
+        Author   : Muhammad Rasyid Fadlurrahman
+    */
     theWinner(player, winner) ;
     if (check == WIN){
-        printf("\n\n==> \a%s Win\n", winner) ;
+        printf("\n\n==> \a%s Win\n", winner) ; //bila ada pememang
     }
     else {
-        printf("\n\n==> \aGame Draw\n") ;
+        printf("\n\n==> \aGame Draw\n") ; ////bila draw
     }
 }
 
 void showGameWinner(int playerCount, int botCount){
+    /* 
+        Deskripsi: menampilkan pemenang 1 game
+        Author   : Reihan Reinaldi Suryaman
+    */
     printf("\n\n ==> %s \n", playerCount > botCount ? "Player Win The Game" : playerCount == botCount ? "Game Draw" : "Bot Win The Game");
 }
 
 void setWinOrDrawCount(int player, int check, int *botCount, int *playerCount, int *drawCount){
+    /* 
+        Deskripsi: menampilkan jumlah menang/seri dalam 1 game
+        Author   : Reihan Reinaldi Suryaman
+    */
     if(check == DRAW){
        (*drawCount)++;
     } else if(check == WIN) {
@@ -1236,6 +1282,11 @@ void setWinOrDrawCount(int player, int check, int *botCount, int *playerCount, i
 }
 
 void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
+    /* 
+        Deskripsi: papan skor
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     printf("             SCOREBOARD\n");
     printf("  ________    _________     ________\n");
     printf(" |        |  |         |   |        |\n");
@@ -1248,6 +1299,11 @@ void showScoreBoard(int playerCount, int botCount, int drawCount, int session){
 }
 
 int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mode){
+    /* 
+        Deskripsi: menentukan skor pergerakan bot yang nantinya akan dipakai pada modul bot, apabila giliran bot maka akan dikirim nilai tertinggi dan apabila player maka akan dikirim nilai tererndah
+        Author   : Reihan Reinaldi Suryaman
+    */
+
     int result = mode == MODE_3X3 ? checkWin3x3(boardValue) : mode == MODE_5X5 ? checkWin5x5(boardValue) : checkWin7x7(boardValue);
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     int moveScore = pow(maxBox,2) + 1;
@@ -1304,19 +1360,29 @@ int minimax(int *boardValue, int depth, int alpha, int beta, bool isBot, int mod
 }
 
 void botEasy(int *boardValue, int mode){
+    /* 
+        Deskripsi: menentukan pergerakan bot secara random
+        Author   : Muhammad Rasyid Fadlurrrahman
+    */
+
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     Position availiablePos[maxBox*maxBox];
     int ukuran = 0;
     checkAvailableSpot(boardValue, availiablePos, maxBox, &ukuran);
 
     srand(time(0));
-    int index = rand() % ukuran + 1;
+    int index = rand() % ukuran + 1;  //memilih angka random dari index yang tersedia
 
     *((boardValue + availiablePos[index].x*maxBox) + availiablePos[index].y) = O;
 }
 
 void botMedium(int *boardValue, int mode){
-    int bestScore = -1000;
+    /* 
+        Deskripsi: menentukan pergerakan bot dengan integrasi modul minimax untuk nilai pergerakan bot dengan kedalaman 3
+        Author   : Muhammad Rasyid Fadlurrrahman
+    */
+
+    int bestScore = -1000; //hanya untuk inisialisasi yang nantinya nilai akan diubah sesuai skor yang diberikan minimax
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     Position move;
 
@@ -1341,6 +1407,11 @@ void botMedium(int *boardValue, int mode){
 }
 
 void botHard(int *boardValue, int mode){
+    /* 
+        Deskripsi: menentukan pergerakan bot dengan integrasi modul minimax untuk nilai pergerakan bot dengan kedalaman 5
+        Author   : Reihan reinaldi Suryaman
+    */
+
     int bestScore = -1000;
     int maxBox = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     Position move;
@@ -1381,6 +1452,10 @@ void botHard(int *boardValue, int mode){
 }
 
 void play(int difficulty, int session, int mode){
+    /* 
+        Deskripsi: modul berjalannya game setelah login
+        Author   : Muhammad Rasyid Fadlurrrahman & Reihan Reinaldi Suryaman
+    */
     int boardTiles = mode == MODE_3X3 ? 3 : mode == MODE_5X5 ? 5 : 7;
     int boardValue [boardTiles][boardTiles];
     int inputPos;
@@ -1400,13 +1475,13 @@ void play(int difficulty, int session, int mode){
         initBoardValue(*boardValue, boardTiles);
 
         do {
-            player = (player % 2);
+            player = (player % 2); //perhitungan untuk menentukan giliran
 
-            showScoreBoard(playerWinCount, botWinCount, drawCount, session);
-            showBoard(mode, *boardValue);
+            showScoreBoard(playerWinCount, botWinCount, drawCount, session); //menanmpilkan skor pada papan skor dalam 1 babak
+            showBoard(mode, *boardValue);// menanmpilkan papan permainan
 
             if(player == O){
-                switch(difficulty){
+                switch(difficulty){ //menetukan tingkat kesulitan
                     //easy
                     case 1 : botEasy(*boardValue, mode);
                         break;
@@ -1425,7 +1500,7 @@ void play(int difficulty, int session, int mode){
                 printf("\nMasukan Posisi : ");
 
                 int start_t = clock() ;
-                scanf("%d", &inputPos);
+                scanf("%d", &inputPos); //inputan untuk menentukan posisi yang player inginkan untuk menempatkan tanda
                 int end_t = clock() ;
 
                 if(inputPos == 0 && iteration == 1){
@@ -1473,9 +1548,9 @@ void play(int difficulty, int session, int mode){
         } while(check == CONTINUE);
 
 
-        showBoard(mode, *boardValue);
-        showWinner(player, check, winner);
-        setWinOrDrawCount(player, check, &botWinCount, &playerWinCount, &drawCount);
+        showBoard(mode, *boardValue); //meanmpilkan pada akhir 1 babak
+        showWinner(player, check, winner); //menampilkan pemenang
+        setWinOrDrawCount(player, check, &botWinCount, &playerWinCount, &drawCount); //menentukan skor pada papan skor
 
         getch() ;
         system("cls");
@@ -1509,8 +1584,11 @@ void play(int difficulty, int session, int mode){
     } while(choice < 1 || choice > 2);
 }
 
-int main()
-{
+int main(){
+    /* 
+        Deskripsi: modul utama yang bekerja sebagai tampilan awal pada game
+        Author   : Reihan Reinaldi Suryaman
+    */
     int choice;
     do{
         showProgramTitle();
